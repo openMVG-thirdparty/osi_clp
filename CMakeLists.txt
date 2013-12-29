@@ -7,12 +7,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 ################
 INCLUDE_DIRECTORIES(.
-CoinUtils/src/
-Clp/src/
-Clp/test/
-Osi/src/OsiCommonTest/
-Osi/src/Osi/
-Clp/src/OsiClp/
+  ./CoinUtils/src/
+  ./Osi/src/Osi/
+  ./Clp/src/
+  ./Clp/src/OsiClp/
+  #Clp/test/
+  #Osi/src/OsiCommonTest/
 )
 
 #Optimisation gcc
@@ -21,7 +21,11 @@ IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 
 IF(MSVC)
-  ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -DSAMPLEDIR="..\..\..\..\Data\Sample\\") 
+  ADD_DEFINITIONS(
+    -D_CRT_SECURE_NO_WARNINGS
+    -D_CRT_SECURE_NO_DEPRECATE
+    #-DSAMPLEDIR="..\..\..\..\Data\Sample\\"
+  ) 
 ENDIF(MSVC)
 
 ADD_SUBDIRECTORY(Osi)
