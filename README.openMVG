@@ -5,7 +5,7 @@ URLs:
 
 License: Eclipse Public License 1.0 http://opensource.org/licenses/eclipse-1.0
 Upstream version:
-  OSI 0.99 (include CLP 1.9)
+  OSI 0.106.10 (include CLP 1.15.11)
 
 Local modifications (pmoulon and bduisit):
 
