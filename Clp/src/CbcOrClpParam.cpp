@@ -1,4 +1,4 @@
-/* $Id: CbcOrClpParam.cpp 1957 2013-05-15 08:58:19Z forrest $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -6,12 +6,10 @@
 #include "CoinPragma.hpp"
 #include "CoinTime.hpp"
 #include "CbcOrClpParam.hpp"
-#include "CoinFinite.hpp"
 
 #include <string>
 #include <iostream>
 #include <cassert>
-
 #ifdef COIN_HAS_CBC
 #ifdef COIN_HAS_CLP
 #include "OsiClpSolverInterface.hpp"
@@ -23,6 +21,10 @@
 #ifdef COIN_HAS_CLP
 #include "ClpSimplex.hpp"
 #include "ClpFactorization.hpp"
+#endif
+#if COIN_INT_MAX==0
+#undef COIN_INT_MAX
+#define COIN_INT_MAX 2147483647
 #endif
 #ifdef COIN_HAS_READLINE
 #include <readline/readline.h>
@@ -3006,6 +3008,8 @@ costs this much to be infeasible",
      parameters[numberParameters-1].append("rhs!ranging");
      parameters[numberParameters-1].append("objective!ranging");
      parameters[numberParameters-1].append("stats");
+     parameters[numberParameters-1].append("boundsint");
+     parameters[numberParameters-1].append("boundsall");
      parameters[numberParameters-1].setLonghelp
      (
           "This changes the amount and format of printing a solution:\nnormal - nonzero column variables \n\
