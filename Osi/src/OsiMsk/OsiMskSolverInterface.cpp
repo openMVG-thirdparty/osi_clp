@@ -112,7 +112,8 @@ void MSKAPI OsiMskStreamFuncWarning(MSKuserhandle_t handle, MSKCONST char* str) 
 		if (((CoinMessageHandler*)handle)->logLevel() >= 0)
 			((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
 	} else {
-		std::cout << str << std::endl;
+		printf(str);
+		printf("\n");
 	}
 }
 
@@ -121,7 +122,8 @@ void MSKAPI OsiMskStreamFuncError(MSKuserhandle_t handle, MSKCONST char* str) {
 	if (handle) {
 		((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
 	} else {
-		std::cerr<< str << std::endl;
+		fprintf(stderr, str);
+		fprintf(stderr, "\n");
 	}
 }
 
@@ -276,7 +278,8 @@ bool OsiMskSolverInterface::definedSolution(int solution) const
 }
 
 // Returns the flag for solver currently switched on in MOSEK resp. (MSK_OPTIMIZER_FREE),
-// (MSK_OPTIMIZER_INTPNT), (MSK_OPTIMIZER_PRIMAL_SIMPLEX) or (MSK_OPTIMIZER_MIXED_INT).
+// (MSK_OPTIMIZER_INTPNT), (MSK_OPTIMIZER_PRIMAL_SIMPLEX), (MSK_OPTIMIZER_MIXED_INT), or
+// (MSK_OPTIMIZER_MIXED_INT_CONIC).
 // MOSEK also has Conic and nonconvex solvers, but these are for obvious reasons not 
 // an option in the Osi interface.
 
@@ -324,7 +327,11 @@ OsiMskSolverInterface::switchToMIP( void )
   int err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_MIO_MODE, MSK_MIO_MODE_SATISFIED);
   checkMSKerror(err,"MSK_putintparam","switchToMIP");
 
+#if MSK_VERSION_MAJOR >= 7
+  err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, MSK_OPTIMIZER_MIXED_INT_CONIC);
+#else
   err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, MSK_OPTIMIZER_MIXED_INT);
+#endif
   checkMSKerror(err,"MSK_putintparam","switchToMIP");
   probtypemip_ = true;
   
@@ -2757,7 +2764,7 @@ std::vector<double*> OsiMskSolverInterface::getPrimalRays(int maxNumRays) const
 
   OsiMskSolverInterface solver(*this);
 
-  int numrows = getNumRows(), r;
+  int numcols = getNumCols(), r;
   MSKsolstae status;
   MSKsoltypee solution;
 
@@ -2781,7 +2788,7 @@ std::vector<double*> OsiMskSolverInterface::getPrimalRays(int maxNumRays) const
       return std::vector<double*>();     
   }
 
-  double *farkasray = new double[numrows];
+  double *farkasray = new double[numcols];
 
   r = MSK_getsolution(getMutableLpPtr(),
                       solution,

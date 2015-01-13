@@ -1,4 +1,4 @@
-/* $Id: AbcWarmStart.hpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id$ */
 /*! \legal
   Copyright (C) 2002, International Business Machines
   Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.

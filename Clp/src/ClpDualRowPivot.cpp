@@ -1,4 +1,4 @@
-/* $Id: ClpDualRowPivot.cpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

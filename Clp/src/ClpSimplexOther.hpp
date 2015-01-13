@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexOther.hpp 1884 2012-11-05 17:38:48Z forrest $ */
+/* $Id$ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

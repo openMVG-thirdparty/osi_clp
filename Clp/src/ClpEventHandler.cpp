@@ -1,4 +1,4 @@
-/* $Id: ClpEventHandler.cpp 1825 2011-11-20 16:02:57Z forrest $ */
+/* $Id$ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

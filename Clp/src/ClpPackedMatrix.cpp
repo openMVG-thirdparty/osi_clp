@@ -1,4 +1,4 @@
-/* $Id: ClpPackedMatrix.cpp 1957 2013-05-15 08:58:19Z forrest $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

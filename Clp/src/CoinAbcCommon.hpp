@@ -1,4 +1,4 @@
-/* $Id: CoinAbcCommon.hpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

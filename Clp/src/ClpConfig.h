@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: ClpConfig.h 1734 2011-06-08 17:28:29Z stefan $
+ * $Id$
  *
  * Include file for the configuration of Clp.
  *

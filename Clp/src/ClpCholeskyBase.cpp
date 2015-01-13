@@ -1,4 +1,4 @@
-/* $Id: ClpCholeskyBase.cpp 1878 2012-08-30 15:43:19Z forrest $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
