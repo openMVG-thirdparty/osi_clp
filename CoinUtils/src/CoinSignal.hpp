@@ -96,8 +96,13 @@
 //-----------------------------------------------------------------------------
 
 #if defined(__MACH__) && defined(__GNUC__)
+#if defined(__clang__)
+   typedef void(*CoinSighandler_t)(int);
+#define CoinSighandler_t_defined
+#elif defined(__MACH__) && defined(__GNUC__)
    typedef typeof(SIG_DFL) CoinSighandler_t;
-#  define CoinSighandler_t_defined
+# define CoinSighandler_t_defined
+#endif
 #endif
 
 //#############################################################################
