@@ -10,3 +10,4 @@ file(
 	*.cpp
 )
 ADD_LIBRARY(lib_OsiClpSolver ${OSI_HEADERS} ${OSI_SRCS})
+INSTALL(TARGETS lib_OsiClpSolver DESTINATION lib EXPORT openMVG-targets)

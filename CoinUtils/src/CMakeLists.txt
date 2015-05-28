@@ -13,3 +13,4 @@ file(
 
 
 ADD_LIBRARY(lib_CoinUtils ${COINUTILS_HEADER} ${COINUTILS_CPP})
+INSTALL(TARGETS lib_CoinUtils DESTINATION lib EXPORT openMVG-targets)
