@@ -37,7 +37,7 @@ CoinPackedVectorBase::operator[](int i) const
    if (! testedDuplicateIndex_)
       duplicateIndex("operator[]", "CoinPackedVectorBase");
 
-   // Get a reference to a map of full storage indices to 
+   // Get a reference to a map of full storage indices to
    // packed storage location.
    const std::set<int> & sv = *indexSet("operator[]", "CoinPackedVectorBase");
 #if 1
@@ -49,7 +49,7 @@ CoinPackedVectorBase::operator[](int i) const
    const size_t ind = std::distance(sv.begin(), sv.find(i));
    return (ind == sv.size()) ? 0.0 : getElements()[ind];
 #endif
-      
+
 }
 
 //#############################################################################
@@ -120,7 +120,7 @@ CoinPackedVectorBase::isExistingIndex(int i) const
 
 int
 CoinPackedVectorBase::findIndex(int i) const
-{   
+{
    const int * inds = getIndices();
    int retVal = static_cast<int>(std::find(inds, inds + getNumElements(), i) - inds);
    if (retVal == getNumElements() ) retVal = -1;
@@ -194,8 +194,8 @@ CoinPackedVectorBase::dotProduct(const double* dense) const
 double
 CoinPackedVectorBase::oneNorm() const
 {
-   register double norm = 0.0;
-   register const double* elements = getElements();
+   double norm = 0.0;
+   const double* elements = getElements();
    for (int i = getNumElements() - 1; i >= 0; --i) {
       norm += fabs(elements[i]);
    }
@@ -224,14 +224,14 @@ CoinPackedVectorBase::twoNorm() const
 double
 CoinPackedVectorBase::infNorm() const
 {
-   register double norm = 0.0;
-   register const double* elements = getElements();
+   double norm = 0.0;
+   const double* elements = getElements();
    for (int i = getNumElements() - 1; i >= 0; --i) {
       norm = CoinMax(norm, fabs(elements[i]));
    }
    return norm;
 }
-   
+
 //-----------------------------------------------------------------------------
 
 double
@@ -262,7 +262,7 @@ CoinPackedVectorBase::~CoinPackedVectorBase()
 void
 CoinPackedVectorBase::findMaxMinIndices() const
 {
-   if ( getNumElements()==0 ) 
+   if ( getNumElements()==0 )
       return;
    // if indexSet exists then grab begin and rend to get min & max indices
    else if ( indexSetPtr_ != NULL ) {
