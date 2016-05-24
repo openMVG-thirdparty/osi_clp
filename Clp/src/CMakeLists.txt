@@ -18,6 +18,7 @@ file(
      ClpCholeskyUfl.cpp
      ClpCholeskyWssmp.cpp
      ClpCholeskyWssmpKKT.cpp
+     ClpMain.cpp
      *Abc*.cpp
 )   
 
