@@ -1,4 +1,4 @@
-/* $Id: CoinPresolvePsdebug.hpp 1560 2012-11-24 00:29:01Z lou $ */
+/* $Id: CoinPresolvePsdebug.hpp 1854 2015-12-18 14:18:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -161,6 +161,9 @@ void presolve_check_nbasic(const CoinPresolveMatrix *preObj) ;
 */
 void presolve_check_nbasic(const CoinPostsolveMatrix *postObj) ;
 
+/// get a row copy in postsolve
+void postsolve_get_rowcopy(const CoinPostsolveMatrix *postObj,
+			   int * & rowStarts, int * & columns, double * & elements ) ;
 //@}
 
 #endif

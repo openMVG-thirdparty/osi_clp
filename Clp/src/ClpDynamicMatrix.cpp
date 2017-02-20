@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ClpDynamicMatrix.cpp 1936 2013-04-09 10:29:27Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

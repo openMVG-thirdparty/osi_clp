@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ClpPresolve.hpp 2134 2015-03-22 16:40:43Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -151,6 +151,14 @@ public:
           if (doDuprow) presolveActions_  &= ~256;
           else presolveActions_ |= 256;
      }
+     /// Whether we want to do dependency part of presolve
+     inline bool doDependency() const {
+          return (presolveActions_ & 32768) != 0;
+     }
+     inline void setDoDependency(bool doDependency) {
+          if (doDependency) presolveActions_  |= 32768;
+          else presolveActions_ &= ~32768;
+     }
      /// Whether we want to do singleton column part of presolve
      inline bool doSingletonColumn() const {
           return (presolveActions_ & 512) == 0;
@@ -174,6 +182,23 @@ public:
      inline void setDoTwoxtwo(bool doTwoxTwo) {
           if (!doTwoxTwo) presolveActions_  &= ~2048;
           else presolveActions_ |= 2048;
+     }
+     /// Whether we want to allow duplicate intersections
+     inline bool doIntersection() const {
+          return (presolveActions_ & 4096) != 0;
+     }
+     inline void setDoIntersection(bool doIntersection) {
+          if (doIntersection) presolveActions_  &= ~4096;
+          else presolveActions_ |= 4096;
+     }
+     /** How much we want to zero small values from aggregation - ratio
+	 0 - 1.0e-12, 1 1.0e-11, 2 1.0e-10, 3 1.0e-9 */
+     inline int zeroSmall() const {
+          return (presolveActions_&(8192|16384))>>13;
+     }
+     inline void setZeroSmall(int value) {
+         presolveActions_  &= ~(8192|16384);
+	 presolveActions_ |= value<<13;
      }
      /// Set whole group
      inline int presolveActions() const {

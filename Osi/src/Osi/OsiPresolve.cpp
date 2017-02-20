@@ -1270,8 +1270,8 @@ CoinPrePostsolveMatrix::CoinPrePostsolveMatrix(const OsiSolverInterface * si,
 
 {
   bulk0_ = static_cast<CoinBigIndex>(bulkRatio_*nelems_in) ;
-  hrow_ = new int [bulk0_] ;
-  colels_ = new double[bulk0_] ;
+  hrow_ = new int [bulk0_+ncols_in] ;
+  colels_ = new double[bulk0_+ncols_in] ;
 
   si->getDblParam(OsiObjOffset,originalOffset_);
   int ncols = si->getNumCols();
@@ -1349,6 +1349,7 @@ CoinPresolveMatrix::CoinPresolveMatrix(int ncols0_in,
     mrstrt_(new CoinBigIndex[nrows_in+1]),
     hinrow_(new int[nrows_in+1]),
     integerType_(new unsigned char[ncols0_in]),
+    anyInteger_(false),
     tuning_(false),
     startTime_(0.0),
     feasibilityTolerance_(0.0),
@@ -1432,12 +1433,16 @@ CoinPresolveMatrix::CoinPresolveMatrix(int ncols0_in,
   delete m;
   {
     int i;
+    int numberIntegers=0;
     for (i=0;i<ncols_;i++) {
-      if (si->isInteger(i))  
+      if (si->isInteger(i)) {  
 	integerType_[i] = 1;
-      else
+	numberIntegers++;
+      } else {
 	integerType_[i] = 0;
+      }
     }
+    anyInteger_ = (numberIntegers!=0);
   }
 
   // Set up prohibited bits if needed

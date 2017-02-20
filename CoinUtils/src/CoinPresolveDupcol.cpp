@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDupcol.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinPresolveDupcol.cpp 1855 2015-12-30 12:47:52Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -167,7 +167,7 @@ const CoinPresolveAction
   // If all coefficients positive do more simply
   bool allPositive=true;
   double * rhs = prob->usefulRowDouble_; //new double[nrows];
-  CoinMemcpyN(rup,nrows,rhs);  
+  CoinMemcpyN(rup,nrows,rhs);
 /*
   Scan the columns for candidates, and write the indices into sort. We're not
   interested in columns that are empty, prohibited, or integral.
@@ -228,6 +228,23 @@ const CoinPresolveAction
     rowmul = prob->randomNumber_;
   }
   compute_sums(ncols,hincol,mcstrt,hrow,colels,rowmul,sort,colsum,nlook) ;
+#define USE_LBS 0
+#define SWAP_SIGNS 0
+#if SWAP_SIGNS
+  int nPiece=0;
+  // array to chain piecewise linear
+  int * piece = new int [ncols];
+  for (int i=0;i<ncols;i++)
+    piece[i]=-1;
+  if (!allPositive) {
+    // swap signs
+    memcpy(sort+nlook,sort,nlook*sizeof(int));
+    for (int i=0;i<nrows;i++)
+      rowmul[i] = -rowmul[i];
+    compute_sums(ncols,hincol,mcstrt,hrow,colels,rowmul,sort+nlook,colsum+nlook,nlook) ;
+    nlook += nlook;
+  }
+#endif
   CoinSort_2(colsum,colsum+nlook,sort) ;
 /*
   General prep --- unpack the various vectors we'll need, and allocate arrays
@@ -265,7 +282,7 @@ const CoinPresolveAction
     double dval = colsum[0] ;
     int first = 0 ;
     for (int jj = 1; jj < nlook; jj++) {
-      while (colsum[jj]==dval) 
+      while (colsum[jj]==dval)
 	jj++ ;
 
       if (first + 1 < jj) {
@@ -328,9 +345,38 @@ const CoinPresolveAction
     for (k = kcs ; k < kce ; k++)
     { if (hrow[k] != hrow[k+ishift] || colels[k] != colels[k+ishift])
       { break ; } }
+#if SWAP_SIGNS
     if (k != kce)
-    { tgt = jj ;
-      continue ; }
+    {
+      if (allPositive) {
+	tgt = jj ;
+	continue ;
+      } else {
+	// try negative
+	for (k = kcs ; k < kce ; k++)
+	  { if (hrow[k] != hrow[k+ishift] || colels[k] != -colels[k+ishift])
+	      { break ; } }
+	if (k == kce) {
+	  nPiece++;
+	  if (piece[j1]<0&&piece[j2]<0) {
+	    piece[j1]=j2;
+	    piece[j2]=j1;
+	  } else if (piece[j1]<0) {
+	    int j3=piece[j2];
+	    piece[j2]=j1;
+	    piece[j1]=j3;
+	  }
+	}
+	tgt = jj ;
+	continue ;
+      }
+    }
+#else
+    if (k != kce) {
+      tgt = jj ;
+      continue ;
+    }
+#endif
 /*
   These really are duplicate columns. Grab values for convenient reference.
   Convert the objective coefficients for minimization.
@@ -345,8 +391,16 @@ const CoinPresolveAction
     // Get reasonable bounds on sum of two variables
     double lowerBound=-COIN_DBL_MAX;
     double upperBound=COIN_DBL_MAX;
+#if USE_LBS == 0
     // For now only if lower bounds are zero
-    if (!clo1&&!clo2) {
+    bool takeColumn= (!clo1&&!clo2);
+#else
+    bool takeColumn= true;
+    if (clo1||clo2)
+      printf("DUPCOL %d and %d have nonzero lbs %g %g\n",
+	j1,j2,clo1,clo2);
+#endif
+    if (takeColumn) {
       // Only need bounds if c1 != c2
       if (c1!=c2) {
 	if (!allPositive) {
@@ -358,7 +412,7 @@ const CoinPresolveAction
 	    bool neginf = false;
 	    double maxup = 0.0;
 	    double maxdown = 0.0;
-	    
+
 	    // compute sum of all bounds except for j1,j2
 	    CoinBigIndex kk;
 	    CoinBigIndex kre = mrstrt[iRow]+hinrow[iRow];
@@ -372,7 +426,7 @@ const CoinPresolveAction
 	      double coeff = rowels[kk];
 	      double lb = clo[col];
 	      double ub = cup[col];
-	      
+
 	      if (coeff > 0.0) {
 		if (PRESOLVE_INF <= ub) {
 		  posinf = true;
@@ -405,7 +459,7 @@ const CoinPresolveAction
 		}
 	      }
 	    }
-	    
+
 	    if (kk==kre) {
 	      assert (value1);
 	      if (value1>1.0e-5) {
@@ -465,15 +519,15 @@ const CoinPresolveAction
 	  for (k=kcs;k<kce;k++) {
 	    int iRow = hrow[k];
 	    double value = colels[k];
-	    int pInf = (value>0.0) ? positiveInf : negativeInf; 
-	    int nInf = (value>0.0) ? negativeInf : positiveInf; 
+	    int pInf = (value>0.0) ? positiveInf : negativeInf;
+	    int nInf = (value>0.0) ? negativeInf : positiveInf;
 	    int posinf = prob->infiniteUp_[iRow]-pInf;
 	    int neginf = prob->infiniteDown_[iRow]-nInf;
 	    if (posinf>0&&neginf>0)
 	      continue; // this row can't bound
 	    double maxup = prob->sumUp_[iRow];
 	    double maxdown = prob->sumDown_[iRow];
-	    
+
 	    if (value>0.0) {
 	      maxdown -= value*lo;
 	      maxup -= value*up;
@@ -526,7 +580,7 @@ const CoinPresolveAction
   doesn't move.
 */
     if (c1 == c2)
-    { 
+    {
 #ifdef PRESOLVE_INTEGER_DUPCOL
       if (!allowIntegers) {
 	if (prob->isInteger(j1)) {
@@ -565,7 +619,7 @@ const CoinPresolveAction
       PRESOLVE_DETAIL_PRINT(printf("pre_dupcol %dC %dC E\n",j2,j1));
 #     endif
 
-      action *s = &actions[nactions++] ;	  
+      action *s = &actions[nactions++] ;
       s->thislo = clo[j2] ;
       s->thisup = cup[j2] ;
       s->lastlo = clo[j1] ;
@@ -757,6 +811,88 @@ const CoinPresolveAction
 */
   if (rowmul != prob->randomNumber_)
     delete[] rowmul ;
+#if SWAP_SIGNS
+  if (nPiece) {
+    nPiece=0;
+    int nTotal=0;
+    for (int i=0;i<ncols;i++) {
+      if ((piece[i]&0x80000000)==0) {
+	int j2=i;
+	int number=1;
+	while (piece[j2]!=i) {
+	  int jNext = piece[j2];
+	  assert (jNext!=-1);
+	  if (jNext<i) {
+	    // already done
+	    number=0;
+	    break;
+	  }
+	  if ((jNext&0x80000000)!=0||clo[jNext]==cup[jNext]) {
+	    // no good
+	    piece[j2] |= 0x80000000;
+	    jNext &= 0x7fffffff;
+	    while (jNext!=j2) {
+	      piece[jNext] |= 0x80000000;
+	      jNext = piece[jNext]&0x7fffffff;
+	    }
+	    piece[j2] |= 0x80000000;
+	    number=-1;
+	    break;
+	  } else {
+	    j2=jNext;
+	    number++;
+	  }
+	}
+	if (number>0) {
+	  nPiece++;
+	  nTotal += number;
+	}
+      }
+    }
+    printf("%d odd duplicates in %d groups\n",nTotal,nPiece);
+    // now build real structures
+    // to test fix and adjust
+    nPiece=0;
+    nTotal=0;
+    for (int i=0;i<ncols;i++) {
+      if ((piece[i]&0x80000000)==0) {
+	int number=1;
+	double lo=CoinMax(clo[i],-1.0e100);
+	double up=CoinMin(cup[i],1.0e100);
+	// get first
+	double value=colels[mcstrt[i]];
+	int iNext=piece[i];
+	piece[i] |= 0x80000000;
+	while (iNext!=i) {
+	  number++;
+	  if (value==colels[mcstrt[iNext]]) {
+	    lo += CoinMax(clo[iNext],-1.0e100);
+	    up += CoinMin(cup[iNext],1.0e100);
+	  } else {
+	    lo -= CoinMin(cup[iNext],1.0e100);
+	    up -= CoinMax(clo[iNext],-1.0e100);
+	  }
+	  clo[iNext]=0.0;
+	  cup[iNext]=0.0;
+	  fixed_down[nfixed_down++] = iNext;
+	  piece[iNext] |= 0x80000000;
+	  iNext=piece[iNext]&0x7fffffff;
+	}
+	if (lo<-1.0e50)
+	  lo=-COIN_DBL_MAX;
+	if (up>1.0e50)
+	  up=COIN_DBL_MAX;
+	if (lo==-COIN_DBL_MAX&&up==COIN_DBL_MAX) {
+	  printf("Help - free variable %d\n",i);
+	}
+	nPiece++;
+	nTotal += number;
+      }
+    }
+    printf("Pass two %d odd duplicates in %d groups\n",nTotal,nPiece);
+  }
+  delete [] piece;
+#endif
   //delete[] colsum ;
   //delete[] sort ;
   //delete [] rhs;
@@ -784,7 +920,8 @@ const CoinPresolveAction
   delete[]fixed_up ;
 
 # if COIN_PRESOLVE_TUNING > 0
-  if (prob->tuning_) double thisTime = CoinCpuTime() ;
+  double thisTime=0.0;
+  if (prob->tuning_) thisTime = CoinCpuTime() ;
 # endif
 # if PRESOLVE_CONSISTENCY > 0 || PRESOLVE_DEBUG > 0
   presolve_check_sol(prob) ;
@@ -815,7 +952,7 @@ void dupcol_action::postsolve(CoinPostsolveMatrix *prob) const
 
   double *sol	= prob->sol_;
   double *dcost	= prob->cost_;
-  
+
   double *colels	= prob->colels_;
   int *hrow		= prob->hrow_;
   CoinBigIndex *mcstrt		= prob->mcstrt_;
@@ -841,7 +978,7 @@ void dupcol_action::postsolve(CoinPostsolveMatrix *prob) const
     presolve_check_free_list(prob) ;
 #   endif
     // hincol[icol] = hincol[icol2]; // right? - no - has to match number in create_col
-    hincol[icol] = f->nincol; 
+    hincol[icol] = f->nincol;
 
     double l_j = f->thislo;
     double u_j = f->thisup;
@@ -895,7 +1032,7 @@ void dupcol_action::postsolve(CoinPostsolveMatrix *prob) const
 	     printf("BAD DUPCOL BOUNDS:  %g %g %g\n", clo[icol2], sol[icol2], cup[icol2]);
 #   endif
   }
-  // leave until desctructor
+  // leave until destructor
   //  deleteAction(actions_,action *);
 }
 
@@ -984,6 +1121,23 @@ const CoinPresolveAction
   bool allowIntersection = ((prob->presolveOptions_&0x10) != 0) ;
   double tolerance = prob->feasibilityTolerance_;
 
+  if (0) {
+    static int xxxxxx=0;
+    int n=0;
+    double dval = workrow[0];
+    int ilastX=0;
+    xxxxxx++;
+    for (int jj = 1; jj < nlook; jj++) {
+      if (workrow[jj]!=dval) {
+	n+= jj-ilastX-1;
+	//if (jj>ilastX+2)
+	//printf("%d matches\n",jj-ilastX);
+	ilastX=jj;
+	dval=workrow[jj];
+      }
+    }
+    printf("may be able to delete %d rows - pass %d\n",n,xxxxxx);
+  }
   double dval = workrow[0];
   for (int jj = 1; jj < nlook; jj++) {
     if (workrow[jj]==dval) {
@@ -996,8 +1150,22 @@ const CoinPresolveAction
 	CoinBigIndex k;
 	for (k=krs;k<kre;k++) {
 	  if (hcol[k] != hcol[k+ishift] ||
-	      rowels[k] != rowels[k+ishift]) {
+	      fabs(rowels[k]-rowels[k+ishift])>1.0e-14) {
 	    break;
+	  }
+	}
+	if (k != kre&&false) {
+	  int rows[2];
+	  rows[0]=ithis;
+	  rows[1]=ilast;
+	  for (int k=0;k<2;k++) {
+	    int kRow=rows[k];
+	    CoinBigIndex krs = mrstrt[kRow];
+	    CoinBigIndex kre = krs + hinrow[kRow];
+	    printf("%g <=",rlo[kRow]);
+	    for (CoinBigIndex k1=krs;k1<kre;k1++)
+	      printf(" (%d,%g)",hcol[k1],rowels[k1]);
+	    printf(" <= %g\n",rup[kRow]);
 	  }
 	}
 	if (k == kre) {
@@ -1056,7 +1224,7 @@ const CoinPresolveAction
 	    } else {
 	      /* overlapping - could merge */
 	      // rlo1>rlo2
-	      // rup1>rup2 
+	      // rup1>rup2
 	      if (rup2<rlo1-tolerance&&!fixInfeasibility) {
 		// infeasible
 		prob->status_|= 1;
@@ -1080,7 +1248,7 @@ const CoinPresolveAction
 	      }
 	    }
 	  }
-	  if (idelete>=0) 
+	  if (idelete>=0)
 	    sort[nuseless_rows++]=idelete;
 	}
       }
@@ -1120,6 +1288,266 @@ void duprow_action::postsolve(CoinPostsolveMatrix *) const
 }
 
 
+#include "CoinFactorization.hpp"
+
+const char *duprow3_action::name () const
+{
+  return ("duprow3_action");
+}
+
+// This is just ekkredc4, adapted into the new framework.
+/*
+  I've made minimal changes for compatibility with dupcol: An initial scan to
+  accumulate rows of interest in sort.
+  -- lh, 040909 --
+*/
+const CoinPresolveAction
+    *duprow3_action::presolve (CoinPresolveMatrix *prob,
+			      const CoinPresolveAction *next)
+{
+  double startTime = 0.0;
+  if (prob->tuning_) {
+    startTime = CoinCpuTime();
+  }
+  //double *rowels	= prob->rowels_;
+  //int *hcol		= prob->hcol_;
+  //CoinBigIndex *mrstrt	= prob->mrstrt_;
+  int *hinrow		= prob->hinrow_;
+  double *colels	= prob->colels_ ;
+  int *hrow		= prob->hrow_ ;
+  CoinBigIndex *mcstrt	= prob->mcstrt_ ;
+  int *hincol		= prob->hincol_ ;
+  double * rowLower = prob->rlo_;
+  double * rowUpper = prob->rup_;
+  double * columnLower = prob->clo_;
+  double * columnUpper = prob->cup_;
+  int ncols		= prob->ncols_;
+  int nrows		= prob->nrows_;
+  int numberDropped=0;
+  int numberRows = 0;
+  int * columnMap = prob->usefulColumnInt_; //new int[ncols] ;
+  int * columnBack = columnMap+ncols;
+  int * rowMap = new int [2*nrows];
+  int * rowBack = rowMap+nrows;
+#define SKIP_RHS
+  int numberRhs=0;
+  for (int i=0;i<nrows;i++) {
+    if (rowLower[i]==rowUpper[i] && hinrow[i]>1) {
+      if (rowLower[i]) {
+	numberRhs++;
+#ifdef SKIP_RHS
+	rowBack[i]=-1;
+	continue;
+#endif
+      }
+      rowBack[i]=numberRows;
+      rowMap[numberRows++]=i;
+    } else {
+      rowBack[i]=-1;
+    }
+  }
+  if (numberRows<CoinMax(100,nrows/4)) {
+    //printf("equality rows %d - %d with rhs - unlikely to help much\n",numberRows,numberRhs);
+    //numberRows=0;
+  } else {
+    //printf("equality rows %d - %d with rhs\n",numberRows,numberRhs);
+  }
+#ifdef SKIP_RHS
+  numberRhs=0;
+#endif
+  if (numberRows) {
+    CoinIndexedVector one;
+    one.reserve(numberRows);
+    double * minValue = one.denseVector();
+    CoinIndexedVector two;
+    two.reserve(numberRows);
+    double * maxValue = two.denseVector();
+    for (int i=0;i<numberRows;i++) {
+      minValue[i]=COIN_DBL_MAX;
+      maxValue[i]=0.0;
+    }
+    CoinBigIndex nElements=0;
+    int numberColumns=0;
+    for (int i=0;i<ncols;i++) {
+      if (columnLower[i]<columnUpper[i]) {
+	int n=0;
+	for (CoinBigIndex j=mcstrt[i];j<mcstrt[i]+hincol[i];j++) {
+	  int iRow=hrow[j];
+	  iRow = rowBack[iRow];
+	  if (iRow>=0) {
+	    n++;
+	    double value=fabs(colels[j]);
+	    minValue[iRow]=CoinMin(minValue[iRow],value);
+	    maxValue[iRow]=CoinMax(maxValue[iRow],value);
+	  }
+	}
+	if (n) {
+	  nElements += n;
+	  columnBack[i]=numberColumns;
+	  columnMap[numberColumns++]=i;
+	} else {
+	  columnBack[i]=-1;
+	}
+      }
+    }
+    //printf("%d columns %d elements\n",numberColumns,nElements);
+    CoinFactorization factorization;
+    factorization.setDenseThreshold(0);
+    CoinPackedMatrix matrix(true,0.0,0.0);
+    matrix.reserve(numberColumns,nElements);
+    int maxDimension = CoinMax(numberRows,numberColumns);
+    matrix.setDimensions(maxDimension,numberColumns);
+    double * element = matrix.getMutableElements();
+    int * row = matrix.getMutableIndices();
+    CoinBigIndex * columnStart = matrix.getMutableVectorStarts();
+    CoinBigIndex * columnLength = matrix.getMutableVectorLengths();
+    // scale rows
+    for (int i=0;i<numberRows;i++) {
+      minValue[i]=1.0/sqrt(minValue[i]*maxValue[i]);
+    }
+    nElements=0;
+    columnStart[0]=0;
+    for (int i=0;i<numberColumns;i++) {
+      int iColumn = columnMap[i];
+      for (CoinBigIndex j=mcstrt[iColumn];j<mcstrt[iColumn]+hincol[iColumn];j++) {
+	int iRow=hrow[j];
+	iRow=rowBack[iRow];
+	if (iRow>=0) {
+	  row[nElements]=iRow;
+	  element[nElements++]=minValue[iRow]*colels[j];
+	}
+      }
+      columnLength[i]=nElements-columnStart[i];
+      columnStart[i+1]=nElements;
+    }
+    matrix.setNumElements(nElements);
+    int * rowIsBasic = new int[maxDimension];
+    int * columnIsBasic = new int[maxDimension];
+    //int numberBasic=0;
+    for (int i=0;i<maxDimension;i++) {
+      rowIsBasic[i]=-1;
+    }
+    for (int i=0;i<numberColumns;i++) {
+      columnIsBasic[i]=1;
+    }
+    //returns 0 -okay, -1 singular, -2 too many in basis, -99 memory */
+    int status=factorization.factorize(matrix,rowIsBasic, columnIsBasic,5.0);
+    //printf("factorization status %d\n",status);
+    if (status == -1) {
+      const int * permute = factorization.permute();
+      const int * pivotColumn = factorization.pivotColumn();
+      int numberBasic=factorization.numberGoodColumns();
+      //printf("%d good columns out of %d - %d rows\n",numberBasic,
+      //     numberColumns,numberRows);
+      if (numberBasic<numberRows-CoinMax(20,nrows/10)) {
+	// get list of real rows which are dependent (maybe infeasible)
+	int * badRow = new int [numberRows-numberBasic];
+	int nBad=0;
+	numberBasic=0;
+	for (int i=0;i<numberColumns;i++) {
+	  //printf("%d permute %d pivotColumn %d\n",
+	  //	 i,permute[i],pivotColumn[i]);
+	  if (pivotColumn[i]<0)
+	    columnIsBasic[i]=-1;
+	  else
+	    numberBasic++;
+	}
+	for (int i=0;i<numberRows;i++) {
+	  if (permute[i]<0) {
+	    badRow[nBad++]=rowMap[i];
+	    rowIsBasic[i]=1;
+	  }
+	}
+	assert (numberBasic+nBad==numberRows);
+	// factorize again
+	if (numberRows<maxDimension) {
+	  int nDelete = maxDimension-numberRows;
+	  int * del = new int [nDelete];
+	  for (int i=0;i<nDelete;i++)
+	    del[i]=i+numberRows;
+	  matrix.deleteRows(nDelete,del);
+	  delete [] del;
+	}
+	if (numberRhs) {
+	  status=factorization.factorize(matrix,rowIsBasic, columnIsBasic,5.0);
+	  //printf("second factorization status %d\n",status);
+	} else {
+	  //printf("skipping second factorization as zero Rhs\n");
+	  status=0;
+	}
+	if (status==0) {
+	  // check feasible
+	  numberDropped=0;
+	  if (numberRhs) {
+	    memset(minValue,0,numberRows*sizeof(double));
+	    memset(maxValue,0,numberRows*sizeof(double));
+	    int * index = one.getIndices();
+	    for (int i=0;i<numberRows;i++) {
+	      int iRow=rowMap[i];
+	      double rhs = rowLower[iRow];
+	      minValue[i]=rhs;
+	    }
+	    for (int i=0;i<nBad;i++) {
+	      int iRow=badRow[i];
+	      iRow=rowBack[iRow];
+	      minValue[iRow]=0.0;
+	    }
+	    int n=0;
+	    for (int i=0;i<numberRows;i++) {
+	      if(minValue[i])
+		index[n++]=i;
+	    }
+	    one.setNumElements(n);
+	    factorization.updateColumn(&two,&one);
+	    for (int i=0;i<nBad;i++) {
+	      int iRealRow=badRow[i];
+	      int iRow=rowBack[iRealRow];
+	      if (fabs(rowLower[iRealRow]-minValue[iRow])>1.0e-7) {
+		//printf("bad %d %d real row %d rhs %g - computed %g\n",
+		//     i,iRow,iRealRow,rowLower[iRealRow],minValue[iRow]);
+	      } else {
+		badRow[numberDropped++]=iRealRow;
+	      }
+	    }
+	  } else {
+	    for (int i=0;i<nBad;i++) {
+	      int iRealRow=badRow[i];
+	      badRow[numberDropped++]=iRealRow;
+	    }
+	  }
+	  if (numberDropped) {
+	    next = useless_constraint_action::presolve(prob,
+						       badRow, numberDropped,
+						       next);
+#ifdef CLP_USEFUL_PRINTOUT
+	    printf("Dependency checking dropped %d rows\n",numberDropped);
+#endif
+	  }
+	}
+	delete [] badRow;
+      }
+    }
+    delete [] rowIsBasic;
+    delete [] columnIsBasic;
+  }
+  delete [] rowMap;
+  if (prob->tuning_) {
+    double thisTime=CoinCpuTime();
+    printf("CoinPresolveDuprow3 - %d rows dropped in time %g, total %g\n",
+	   numberDropped,thisTime-startTime,thisTime-prob->startTime_);
+  }
+#ifdef CLP_INVESTIGATE
+  printf("CoinPresolveDuprow3 - %d rows dropped\n",numberDropped);
+#endif
+  return (next);
+}
+
+void duprow3_action::postsolve(CoinPostsolveMatrix *) const
+{
+  printf("STILL NO POSTSOLVE FOR DUPROW3!\n");
+  abort();
+}
+
 
 /*
   Routines for gub rows. This is definitely unfinished --- there's no
@@ -1158,6 +1586,9 @@ const CoinPresolveAction
   double *rlo	= prob->rlo_;
   double *rup	= prob->rup_;
 
+  // maximum number of records
+  action * actions = new action[nrows];
+  int nactions=0;
 /*
   Scan the rows.  We're not
   interested in rows that are empty or prohibited.
@@ -1207,13 +1638,12 @@ const CoinPresolveAction
 	  }
 	}
 	// Now see if any promising
+	int nDrop = 0;
 	for (int j=0;j<nLook;j++) {
 	  int iRow = which[j];
 	  if (number[iRow]==nInRow) {
 	    // can delete elements and adjust rhs
-	    affectedRows++;
-	    droppedElements += nInRow;
-	    for (CoinBigIndex kk=rStart; kk<rEnd; kk++) 
+	    for (CoinBigIndex kk=rStart; kk<rEnd; kk++)
 	      presolve_delete_from_col(iRow,hcol[kk],mcstrt,hincol,hrow,colels) ;
 	    int nInRow2 = hinrow[iRow];
 	    CoinBigIndex rStart2 = mrstrt[iRow];
@@ -1226,6 +1656,7 @@ const CoinPresolveAction
 	      }
 	    }
 	    hinrow[iRow] = nInRow2-nInRow;
+	    nDrop++;
 	    if (!hinrow[iRow])
 	      PRESOLVE_REMOVE_LINK(prob->rlink_,iRow) ;
 	    double value =(rlo[i]/value1)*els[iRow];
@@ -1234,7 +1665,37 @@ const CoinPresolveAction
 	      rlo[iRow] -= value;
 	    if (rup[iRow]<1.0e20)
 	      rup[iRow] -= value;
+	  } else {
+	    number[iRow]=0;
 	  }
+	}
+	if (nDrop) {
+	  affectedRows += nDrop;
+	  droppedElements += nDrop*nInRow;
+	  action & thisAction = actions[nactions];
+	  int * deletedRow = new int [nDrop+1];
+	  int * indices = CoinCopyOfArray(hcol+rStart,nInRow);
+	  thisAction.indices = indices;
+	  double * rowels = new double [nDrop+1];
+	  thisAction.rhs = rlo[i];
+	  deletedRow[nDrop]=i;
+	  rowels[nDrop] = value1;
+	  nDrop=0;
+	  for (int j=0;j<nLook;j++) {
+	    int iRow = which[j];
+	    if (number[iRow]) {
+	      deletedRow[nDrop]=iRow;
+	      rowels[nDrop++]=els[iRow];
+	    }
+	  }
+	  thisAction.nDrop=nDrop;
+	  thisAction.ninrow=nInRow;
+	  thisAction.deletedRow = deletedRow;
+	  thisAction.rowels = rowels;
+	  nactions++;
+	}
+	for (int j=0;j<nLook;j++) {
+	  int iRow = which[j];
 	  els[iRow]=0.0;
 	}
 	for (k=rStart;k<rEnd;k++) {
@@ -1244,6 +1705,11 @@ const CoinPresolveAction
       }
     }
   }
+  if (nactions) {
+    next = new gubrow_action(nactions,
+				   CoinCopyOfArray(actions,nactions),next) ;
+  }
+  deleteAction(actions,action*) ;
   if (prob->tuning_) {
     double thisTime=CoinCpuTime();
     printf("CoinPresolveGubrow(1024) - %d elements dropped (%d rows) in time %g, total %g\n",
@@ -1257,12 +1723,156 @@ const CoinPresolveAction
   return (next);
 }
 
-void gubrow_action::postsolve(CoinPostsolveMatrix *) const
+void gubrow_action::postsolve(CoinPostsolveMatrix * prob) const
 {
-  printf("STILL NO POSTSOLVE FOR GUBROW!\n");
-  abort();
+# if PRESOLVE_DEBUG > 0 || PRESOLVE_CONSISTENCY > 0
+# if PRESOLVE_DEBUG > 0
+  std::cout
+    << "Entering gubrow_action::postsolve, "
+    << nactions_ << " constraints to process." << std::endl ;
+# endif
+  //int ncols = prob->ncols_ ;
+  //char *cdone = prob->cdone_ ;
+  //char *rdone = prob->rdone_ ;
+  //const double ztolzb = prob->ztolzb_ ;
+
+  presolve_check_threads(prob) ;
+  presolve_check_free_list(prob) ;
+  presolve_check_reduced_costs(prob) ;
+  presolve_check_duals(prob) ;
+  presolve_check_sol(prob,2,2,2) ;
+  presolve_check_nbasic(prob) ;
+# endif
+
+/*
+  Unpack the column-major representation.
+*/
+  CoinBigIndex *colStarts = prob->mcstrt_ ;
+  int *colLengths = prob->hincol_ ;
+  int *rowIndices = prob->hrow_ ;
+  double *colCoeffs = prob->colels_ ;
+/*
+  Rim vectors, solution, reduced costs, duals, row activity.
+*/
+  double *rlo = prob->rlo_ ;
+  double *rup = prob->rup_ ;
+  //double *cost = prob->cost_ ;
+  //double *sol = prob->sol_ ;
+  //double *rcosts = prob->rcosts_ ;
+  double *acts = prob->acts_ ;
+  double *rowduals = prob->rowduals_ ;
+
+  CoinBigIndex *link = prob->link_ ;
+  CoinBigIndex &free_list = prob->free_list_ ;
+
+  //const double maxmin = prob->maxmin_ ;
+
+  const action *const actions = actions_ ;
+  const int nactions = nactions_ ;
+
+/*
+  Open the main loop to step through the postsolve objects.
+
+*/
+  for (const action *f = &actions[nactions-1] ; actions <= f ; f--) {
+    int * deletedRow = f->deletedRow;
+    double * els = f->rowels;
+    int * indices = f->indices;
+    int nDrop = f->nDrop;
+    int ninrow = f->ninrow;
+    double rhs = f->rhs;
+    double coeff = els[nDrop];
+    int iRow = deletedRow[nDrop];
+    for (int i = 0; i<nDrop;i++) {
+      int tgtrow=deletedRow[i];
+      double coeffy=els[i];
+      double dualValue = rowduals[tgtrow];
+#     if PRESOLVE_DEBUG > 2
+      std::cout << "    restoring row " << tgtrow <<" coeff "<<coeffy
+		<<" dual " << dualValue
+		<< " dual on " << iRow <<" goes from "
+		<< rowduals[iRow] << " to "
+		<< rowduals[iRow] - (coeffy*dualValue)/coeff
+		<< std::endl ;
+#     endif
+      // adjust dual on iRow
+      rowduals[iRow] -= (coeffy*dualValue)/coeff;
+#     if 0 //PRESOLVE_DEBUG > 2
+      int * rowStart;
+      int * column;
+      double * element;
+      postsolve_get_rowcopy(prob,rowStart,column,element);
+      for (int k=rowStart[tgtrow];k<rowStart[tgtrow+1];k++) {
+	printf("(%d, %g, %s - rcost %g) ",column[k],element[k],
+	       statusName(prob->getColumnStatus(column[k])),rcosts[column[k]]);
+	if ((k-rowStart[tgtrow])%10==9)
+	  printf("\n");
+      }
+      printf("\n");
+#endif
+
+      for (int rndx = 0 ; rndx < ninrow ; ++rndx) {
+	int j = indices[rndx] ;
+#       if PRESOLVE_DEBUG > 2
+	std::cout << " a(" << j << " rcost " << rcosts[j]
+		  << " -> " << rcosts[j]-dualValue*coeffy<<" "<<
+	  statusName(prob->getColumnStatus(j))<<")" ;
+#       endif
+	CoinBigIndex kk = free_list ;
+	assert(kk >= 0 && kk < prob->bulk0_) ;
+	free_list = link[free_list] ;
+	link[kk] = colStarts[j] ;
+	colStarts[j] = kk ;
+	colCoeffs[kk] = coeffy ;
+	rowIndices[kk] = tgtrow ;
+	++colLengths[j] ;
+      }
+      double value = (rhs/coeff)*coeffy;
+      acts[tgtrow] += value;  ;
+      // correct rhs
+      if (rlo[tgtrow]>-1.0e20)
+	rlo[tgtrow] += value;
+      if (rup[tgtrow]<1.0e20)
+	rup[tgtrow] += value;
+#     if PRESOLVE_DEBUG > 2
+      std::cout << std::endl ;
+#     endif
+
+#     if PRESOLVE_CONSISTENCY > 0
+      presolve_check_threads(prob) ;
+      presolve_check_free_list(prob) ;
+#     endif
+    }
+  }
+
+# if PRESOLVE_DEBUG > 0 || PRESOLVE_CONSISTENCY > 0
+  presolve_check_threads(prob) ;
+  presolve_check_free_list(prob) ;
+  presolve_check_reduced_costs(prob) ;
+  presolve_check_duals(prob) ;
+  presolve_check_sol(prob,2,2,2) ;
+  presolve_check_nbasic(prob) ;
+# if PRESOLVE_DEBUG > 0
+  std::cout << "Leaving gubrow_action::postsolve." << std::endl ;
+# endif
+# endif
+
+  return ;
 }
 
+gubrow_action::~gubrow_action()
+{
+  const action *actions = actions_ ;
+
+  for (int i = 0 ; i < nactions_ ; ++i) {
+    delete [] actions[i].rowels ;
+    delete [] actions[i].deletedRow ;
+    delete [] actions[i].indices;
+  }
+
+  // Must add cast to placate MS compiler
+  deleteAction(actions_,gubrow_action::action*) ;
+}
 
 
 /*
@@ -1524,7 +2134,7 @@ const CoinPresolveAction
 	    PRESOLVE_DETAIL_PRINT(printf("Can decrease upper bound on %d from %g to %g\n",
 					 icol,upperX,highestHighest));
 	    upperX=highestHighest;
-	    
+
 	  }
 #endif
 	  // see if we can move costs
@@ -1641,7 +2251,7 @@ const CoinPresolveAction
     action * actions = new action[nactions];
     memcpy(actions,boundRecords,nactions*sizeof(action));
     next = new twoxtwo_action(nactions,actions,next);
-    int *sort = prob->usefulColumnInt_; 
+    int *sort = prob->usefulColumnInt_;
     for (int i=0;i<nactions;i++)
       sort[i]=boundRecords[i].row;
     next = useless_constraint_action::presolve(prob,

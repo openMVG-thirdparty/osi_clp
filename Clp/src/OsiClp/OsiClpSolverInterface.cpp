@@ -9,7 +9,7 @@ extern int osi_crunch;
 extern int osi_primal;
 extern int osi_dual;
 extern int osi_hot;
-#endif 
+#endif
 #include "CoinTime.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinIndexedVector.hpp"
@@ -35,7 +35,10 @@ extern int osi_hot;
 #include "OsiColCut.hpp"
 #include "ClpPresolve.hpp"
 #include "CoinLpIO.hpp"
+//#define PRINT_TIME
+#ifdef PRINT_TIME
 static double totalTime=0.0;
+#endif
 //#define SAVE_MODEL 1
 #ifdef SAVE_MODEL
 static int resolveTry=0;
@@ -71,7 +74,9 @@ void OsiClpSolverInterface::initialSolve()
   }
   bool deleteSolver;
   ClpSimplex * solver;
+#ifdef PRINT_TIME
   double time1 = CoinCpuTime();
+#endif
   int userFactorizationFrequency = modelPtr_->factorization()->maximumPivots();
   int totalIterations=0;
   bool abortSearch=false;
@@ -142,7 +147,7 @@ void OsiClpSolverInterface::initialSolve()
   // Switch off printing if asked to
   bool gotHint = (getHintParam(OsiDoReducePrint,takeHint,strength));
   assert (gotHint);
-  if (strength!=OsiHintIgnore&&takeHint) {
+  if (gotHint&&strength!=OsiHintIgnore&&takeHint) {
     if (messageLevel>0)
       messageLevel--;
   }
@@ -199,13 +204,13 @@ void OsiClpSolverInterface::initialSolve()
     }
     //solver->setDualBound(1.0e6);
     //solver->setDualTolerance(1.0e-7);
-    
+
     //ClpDualRowSteepest steep;
     //solver->setDualRowPivotAlgorithm(steep);
     //solver->setPrimalTolerance(1.0e-8);
     //ClpPrimalColumnSteepest steepP;
     //solver->setPrimalColumnPivotAlgorithm(steepP);
-    
+
     // sort out hints;
     // algorithm 0 whatever, -1 force dual, +1 force primal
     int algorithm = 0;
@@ -222,7 +227,7 @@ void OsiClpSolverInterface::initialSolve()
     // doPrimal set true if any structurals in basis so switch off crash
     if (doPrimal)
       doCrash = -1;
-    
+
     // presolve
     gotHint = (getHintParam(OsiDoPresolveInInitial,takeHint,strength));
     assert (gotHint);
@@ -237,7 +242,7 @@ void OsiClpSolverInterface::initialSolve()
       } else {
 	model2->setSpecialOptions(solver->specialOptions());
       }
-      
+
       // change from 200 (unless changed)
       if (modelPtr_->factorization()->maximumPivots()==200)
         model2->factorization()->maximumPivots(100+model2->numberRows()/50);
@@ -282,7 +287,7 @@ void OsiClpSolverInterface::initialSolve()
 	    printf("dual trouble a\n");
 #endif
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -295,7 +300,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("dual trouble b\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -310,7 +315,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("disaster - treat as infeasible\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -337,7 +342,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("primal trouble a\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -350,7 +355,7 @@ void OsiClpSolverInterface::initialSolve()
 		printf("primal trouble b\n");
 #endif
 		if (disasterHandler_->typeOfDisaster()) {
-		  // We want to abort 
+		  // We want to abort
 		  abortSearch=true;
 		  goto disaster;
 		}
@@ -365,7 +370,7 @@ void OsiClpSolverInterface::initialSolve()
 		printf("disaster - treat as infeasible\n");
 #endif
 		if (disasterHandler_->typeOfDisaster()) {
-		  // We want to abort 
+		  // We want to abort
 		  abortSearch=true;
 		  goto disaster;
 		}
@@ -393,7 +398,7 @@ void OsiClpSolverInterface::initialSolve()
 	    printf("primal trouble a\n");
 #endif
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -406,7 +411,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("primal trouble b\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -421,7 +426,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("disaster - treat as infeasible\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -448,7 +453,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("dual trouble a\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -461,7 +466,7 @@ void OsiClpSolverInterface::initialSolve()
 		printf("dual trouble b\n");
 #endif
 		if (disasterHandler_->typeOfDisaster()) {
-		  // We want to abort 
+		  // We want to abort
 		  abortSearch=true;
 		goto disaster;
 		}
@@ -476,7 +481,7 @@ void OsiClpSolverInterface::initialSolve()
 		printf("disaster - treat as infeasible\n");
 #endif
 		if (disasterHandler_->typeOfDisaster()) {
-		  // We want to abort 
+		  // We want to abort
 		  abortSearch=true;
 		  goto disaster;
 		}
@@ -494,7 +499,7 @@ void OsiClpSolverInterface::initialSolve()
         pinfo->postsolve(true);
 	delete pinfo;
 	pinfo = NULL;
-        
+
         delete model2;
 	int oldStatus=solver->status();
 	solver->setProblemStatus(presolvedStatus);
@@ -519,7 +524,7 @@ void OsiClpSolverInterface::initialSolve()
 		printf("primal trouble a\n");
 #endif
 		if (disasterHandler_->typeOfDisaster()) {
-		  // We want to abort 
+		  // We want to abort
 		  abortSearch=true;
 		  goto disaster;
 		}
@@ -532,7 +537,7 @@ void OsiClpSolverInterface::initialSolve()
 		  printf("primal trouble b\n");
 #endif
 		  if (disasterHandler_->typeOfDisaster()) {
-		    // We want to abort 
+		    // We want to abort
 		    abortSearch=true;
 		    goto disaster;
 		  }
@@ -547,7 +552,7 @@ void OsiClpSolverInterface::initialSolve()
 		  printf("disaster - treat as infeasible\n");
 #endif
 		  if (disasterHandler_->typeOfDisaster()) {
-		    // We want to abort 
+		    // We want to abort
 		    abortSearch=true;
 		    goto disaster;
 		  }
@@ -576,7 +581,7 @@ void OsiClpSolverInterface::initialSolve()
       disasterHandler_->setOsiModel(this);
       disasterHandler_->setSimplex(solver); // as "borrowed"
       bool inCbcOrOther = (modelPtr_->specialOptions()&0x03000000)!=0;
-      if (!doPrimal) 
+      if (!doPrimal)
 	disasterHandler_->setWhereFrom(4);
       else
 	disasterHandler_->setWhereFrom(6);
@@ -592,7 +597,7 @@ void OsiClpSolverInterface::initialSolve()
 	    printf("dual trouble a\n");
 #endif
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -605,7 +610,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("dual trouble b\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -620,7 +625,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("disaster - treat as infeasible\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -648,7 +653,7 @@ void OsiClpSolverInterface::initialSolve()
 	    printf("primal trouble a\n");
 #endif
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -661,7 +666,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("primal trouble b\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -676,7 +681,7 @@ void OsiClpSolverInterface::initialSolve()
 	      printf("disaster - treat as infeasible\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -768,8 +773,10 @@ void OsiClpSolverInterface::initialSolve()
     modelPtr_->computeObjectiveValue();
   // mark so we can pick up objective value quickly
   modelPtr_->upperIn_=0.0;
+#ifdef PRINT_TIME
   time1 = CoinCpuTime()-time1;
   totalTime += time1;
+#endif
   assert (!modelPtr_->disasterHandler());
   if (lastAlgorithm_<1||lastAlgorithm_>2)
     lastAlgorithm_=1;
@@ -785,7 +792,9 @@ void OsiClpSolverInterface::initialSolve()
   delete modelPtr_->rowCopy_;
   modelPtr_->rowCopy_=NULL;
 #endif
-  //std::cout<<time1<<" seconds - total "<<totalTime<<std::endl;
+#ifdef PRINT_TIME
+  std::cout<<time1<<" seconds - total "<<totalTime<<std::endl;
+#endif
   delete pinfo;
 }
 //-----------------------------------------------------------------------------
@@ -831,8 +840,9 @@ void OsiClpSolverInterface::resolve()
   //pclp("res");
   bool takeHint;
   OsiHintStrength strength;
-  bool gotHint = (getHintParam(OsiDoInBranchAndCut,takeHint,strength));
-  assert (gotHint);
+  //bool gotHint =
+    (getHintParam(OsiDoInBranchAndCut,takeHint,strength));
+  //assert (gotHint);
   // mark so we can pick up objective value quickly
   modelPtr_->upperIn_=0.0;
   if ((specialOptions_&4096)!=0) {
@@ -874,9 +884,9 @@ void OsiClpSolverInterface::resolve()
     }
   }
   // If using Clp initialSolve and primal - just do here
-  gotHint = (getHintParam(OsiDoDualInResolve,takeHint,strength));
+  bool gotHint = (getHintParam(OsiDoDualInResolve,takeHint,strength));
   assert (gotHint);
-  if (strength!=OsiHintIgnore&&!takeHint&&solveOptions_.getSpecialOption(6)) {
+  if (gotHint&&strength!=OsiHintIgnore&&!takeHint&&solveOptions_.getSpecialOption(6)) {
     ClpSolve options=solveOptions_;
     // presolve
     getHintParam(OsiDoPresolveInResolve,takeHint,strength);
@@ -912,7 +922,7 @@ void OsiClpSolverInterface::resolve()
       startFinishOptions=1+4;
       if ((specialOptions_&8)!=0)
         startFinishOptions +=2; // allow re-use of factorization
-      if((specialOptions_&4)==0||!takeHint) 
+      if((specialOptions_&4)==0||!takeHint)
         modelPtr_->setSpecialOptions(saveOptions|(64|128|512|1024|4096|32768));
       else
         modelPtr_->setSpecialOptions(saveOptions|(64|128|512|1024|2048|4096|32768));
@@ -1040,7 +1050,7 @@ void OsiClpSolverInterface::resolve()
     if (model2!=modelPtr_) {
       int finalStatus=model2->status();
       pinfo.postsolve(true);
-    
+
       delete model2;
       // later try without (1) and check duals before solve
       if (finalStatus!=3&&(finalStatus||modelPtr_->status()==-1)) {
@@ -1090,7 +1100,9 @@ void OsiClpSolverInterface::resolve()
 	}
       }
 #endif
-      if((specialOptions_&1)==0||(specialOptions_&2048)!=0/*||skipCrunch*/) {
+      if((specialOptions_&1)==0||
+	 (specialOptions_&2048)!=0||
+	 (modelPtr_->specialOptions_&2097152)!=0/*||skipCrunch*/) {
 	disasterHandler_->setWhereFrom(0); // dual
 	if (inCbcOrOther)
 	  modelPtr_->setDisasterHandler(disasterHandler_);
@@ -1112,7 +1124,7 @@ void OsiClpSolverInterface::resolve()
 #endif
 #ifdef CBC_STATISTICS
 	osi_dual++;
-#endif 
+#endif
 	modelPtr_->dual(0,startFinishOptions);
 	totalIterations += modelPtr_->numberIterations();
 	if (specialScale) {
@@ -1122,7 +1134,7 @@ void OsiClpSolverInterface::resolve()
       } else {
 #ifdef CBC_STATISTICS
 	osi_crunch++;
-#endif 
+#endif
 	crunch();
 	totalIterations += modelPtr_->numberIterations();
 	if (modelPtr_->problemStatus()==4)
@@ -1133,7 +1145,7 @@ void OsiClpSolverInterface::resolve()
       if (inCbcOrOther) {
 	if(disasterHandler_->inTrouble()) {
 	  if (disasterHandler_->typeOfDisaster()) {
-	    // We want to abort 
+	    // We want to abort
 	    abortSearch=true;
 	    goto disaster;
 	  }
@@ -1143,7 +1155,7 @@ void OsiClpSolverInterface::resolve()
 	  totalIterations += modelPtr_->numberIterations();
 	  if (disasterHandler_->inTrouble()) {
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -1158,7 +1170,7 @@ void OsiClpSolverInterface::resolve()
 	    printf("disaster - treat as infeasible\n");
 #endif
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -1244,7 +1256,7 @@ void OsiClpSolverInterface::resolve()
       //printf("doing primal\n");
 #ifdef CBC_STATISTICS
       osi_primal++;
-#endif 
+#endif
       modelPtr_->primal(1,startFinishOptions);
       totalIterations += modelPtr_->numberIterations();
       lastAlgorithm_=1; // primal
@@ -1319,7 +1331,7 @@ void OsiClpSolverInterface::resolve()
 }
 #include "ClpSimplexOther.hpp"
 // Resolve an LP relaxation after problem modification (try GUB)
-void 
+void
 OsiClpSolverInterface::resolveGub(int needed)
 {
   bool takeHint;
@@ -1341,7 +1353,7 @@ OsiClpSolverInterface::resolveGub(int needed)
   int * which = new int[numberRows];
   int numberColumns = modelPtr_->numberColumns();
   int * whichC = new int[numberColumns+numberRows];
-  ClpSimplex * model2 = 
+  ClpSimplex * model2 =
     static_cast<ClpSimplexOther *> (modelPtr_)->gubVersion(which,whichC,
 							   needed,100);
   if (model2) {
@@ -1370,7 +1382,7 @@ OsiClpSolverInterface::resolveGub(int needed)
   modelPtr_->messageHandler()->setLogLevel(saveMessageLevel);
 }
 // Sort of lexicographic resolve
-void 
+void
 OsiClpSolverInterface::lexSolve()
 {
 #if 1
@@ -1399,7 +1411,7 @@ OsiClpSolverInterface::lexSolve()
                0 skip if normal defaults
                1 leaves
   */
-void 
+void
 OsiClpSolverInterface::setupForRepeatedUse(int senseOfAdventure, int printOut)
 {
   // First try
@@ -1417,6 +1429,10 @@ OsiClpSolverInterface::setupForRepeatedUse(int senseOfAdventure, int printOut)
     specialOptions_=1+8;
     break;
   }
+  //#define NO_CRUNCH2
+#ifdef NO_CRUNCH2
+  specialOptions_ &= ~1;
+#endif
   bool stopPrinting=false;
   if (printOut<0) {
     stopPrinting=true;
@@ -1425,14 +1441,14 @@ OsiClpSolverInterface::setupForRepeatedUse(int senseOfAdventure, int printOut)
     OsiHintStrength strength;
     getHintParam(OsiDoReducePrint,takeHint,strength);
     int messageLevel=messageHandler()->logLevel();
-    if (strength!=OsiHintIgnore&&takeHint) 
+    if (strength!=OsiHintIgnore&&takeHint)
       messageLevel--;
     stopPrinting = (messageLevel<=0);
   }
 #ifndef COIN_DEVELOP
   if (stopPrinting) {
     CoinMessages * messagesPointer = modelPtr_->messagesPointer();
-    // won't even build messages 
+    // won't even build messages
     messagesPointer->setDetailMessages(100,10000,reinterpret_cast<int *> (NULL));
   }
 #endif
@@ -1488,7 +1504,7 @@ OsiClpSolverInterface::setStrParam(OsiStrParam key, const std::string & value)
 //-----------------------------------------------------------------------------
 
 bool
-OsiClpSolverInterface::getIntParam(OsiIntParam key, int& value) const 
+OsiClpSolverInterface::getIntParam(OsiIntParam key, int& value) const
 {
   return modelPtr_->getIntParam(static_cast<ClpIntParam> (key), value);
 }
@@ -1557,9 +1573,9 @@ bool OsiClpSolverInterface::isProvenDualInfeasible() const
   const int stat = modelPtr_->status();
   return stat == 2;
 }
-/* 
+/*
    NOTE - Coding if limit > 1.0e30 says that 1.0e29 is loose bound
-   so all maximization tests are changed 
+   so all maximization tests are changed
 */
 bool OsiClpSolverInterface::isPrimalObjectiveLimitReached() const
 {
@@ -1569,7 +1585,7 @@ bool OsiClpSolverInterface::isPrimalObjectiveLimitReached() const
     // was not ever set
     return false;
   }
-   
+
   const double obj = modelPtr_->objectiveValue();
   int maxmin = static_cast<int> (modelPtr_->optimizationDirection());
 
@@ -1591,14 +1607,16 @@ bool OsiClpSolverInterface::isDualObjectiveLimitReached() const
 
   const int stat = modelPtr_->status();
   if (stat == 1)
-  return true;
+    return true;
+  else if (stat<0)
+    return false;
   double limit = 0.0;
   modelPtr_->getDblParam(ClpDualObjectiveLimit, limit);
   if (fabs(limit) > 1e30) {
     // was not ever set
     return false;
   }
-   
+
   const double obj = modelPtr_->objectiveValue();
   int maxmin = static_cast<int> (modelPtr_->optimizationDirection());
 
@@ -1639,13 +1657,13 @@ CoinWarmStart* OsiClpSolverInterface::getWarmStart() const
 /* Get warm start information.
    Return warm start information for the current state of the solver
    interface. If there is no valid warm start information, an empty warm
-   start object wil be returned.  This does not necessarily create an 
+   start object wil be returned.  This does not necessarily create an
    object - may just point to one.  must Delete set true if user
    should delete returned object.
    OsiClp version always returns pointer and false.
 */
-CoinWarmStart* 
-OsiClpSolverInterface::getPointerToWarmStart(bool & mustDelete) 
+CoinWarmStart*
+OsiClpSolverInterface::getPointerToWarmStart(bool & mustDelete)
 {
   mustDelete = false;
   return &basis_;
@@ -1677,7 +1695,7 @@ void OsiClpSolverInterface::markHotStart()
 {
 #ifdef CBC_STATISTICS
   osi_hot++;
-#endif 
+#endif
   //printf("HotStart options %x changed %x, small %x spare %x\n",
   // specialOptions_,modelPtr_->whatsChanged_,
   // smallModel_,spareArrays_);
@@ -1685,7 +1703,7 @@ void OsiClpSolverInterface::markHotStart()
   saveData_.perturbation_=0;
   saveData_.specialOptions_ = modelPtr_->specialOptions_;
   modelPtr_->specialOptions_ |= 0x1000000;
-  modelPtr_->specialOptions_ = saveData_.specialOptions_; 
+  modelPtr_->specialOptions_ = saveData_.specialOptions_;
   ClpObjective * savedObjective=NULL;
   double savedDualLimit=modelPtr_->dblParam_[ClpDualObjectiveLimit];
   if (fakeObjective_) {
@@ -1726,7 +1744,7 @@ void OsiClpSolverInterface::markHotStart()
     // space for save arrays
     int numberColumns = modelPtr_->numberColumns();
     int numberRows = modelPtr_->numberRows();
-    // Get space for strong branching 
+    // Get space for strong branching
     int size = static_cast<int>((1+4*(numberRows+numberColumns))*sizeof(double));
     // and for save of original column bounds
     size += static_cast<int>(2*numberColumns*sizeof(double));
@@ -1793,7 +1811,7 @@ void OsiClpSolverInterface::markHotStart()
       rowActivity_=upRange;
       columnActivity_=downRange;
     }
-#endif 
+#endif
     if (savedObjective) {
       // fix up
       modelPtr_->dblParam_[ClpDualObjectiveLimit]=savedDualLimit;
@@ -2024,7 +2042,7 @@ void OsiClpSolverInterface::markHotStart()
     if((specialOptions_&1)==0) {
       small->setSpecialOptions(clpOptions|(64|1024));
     } else {
-      if((specialOptions_&4)==0) 
+      if((specialOptions_&4)==0)
         small->setSpecialOptions(clpOptions|(64|128|512|1024|4096));
       else
         small->setSpecialOptions(clpOptions|(64|128|512|1024|2048|4096));
@@ -2086,7 +2104,7 @@ void OsiClpSolverInterface::markHotStart()
       } else {
 	// update model
 	static_cast<ClpSimplexOther *> (modelPtr_)->afterCrunch(*small,whichRow,whichColumn,nBound);
-      } 
+      }
 #ifndef SETUP_HOT
       assert (factorization_==NULL);
       factorization_ = static_cast<ClpSimplexDual *>(small)->setupForStrongBranching(spareArrays_,numberRows,
@@ -2181,7 +2199,7 @@ void OsiClpSolverInterface::solveFromHotStart()
   int itlim;
   modelPtr_->getIntParam(ClpMaxNumIterationHotStart, itlim);
   // Is there an extra copy of scaled bounds
-  int extraCopy = (modelPtr_->maximumRows_>0) ? modelPtr_->maximumRows_+modelPtr_->maximumColumns_ : 0; 
+  int extraCopy = (modelPtr_->maximumRows_>0) ? modelPtr_->maximumRows_+modelPtr_->maximumColumns_ : 0;
 #ifdef CLEAN_HOT_START
   if ((specialOptions_&65536)!=0) {
     double * arrayD = reinterpret_cast<double *> (spareArrays_);
@@ -2214,7 +2232,7 @@ void OsiClpSolverInterface::solveFromHotStart()
     double * upperInternal = modelPtr_->upperRegion();
     double rhsScale = modelPtr_->rhsScale();
     const double * columnScale = NULL;
-    if (modelPtr_->scalingFlag()>0) 
+    if (modelPtr_->scalingFlag()>0)
       columnScale = modelPtr_->columnScale() ;
     // and do bounds in case dual needs them
     int iColumn;
@@ -2245,7 +2263,7 @@ void OsiClpSolverInterface::solveFromHotStart()
     int saveNumberFake = (static_cast<ClpSimplexDual *>(modelPtr_))->numberFake_;
     int status = (static_cast<ClpSimplexDual *>(modelPtr_))->fastDual(alwaysFinish);
     (static_cast<ClpSimplexDual *>(modelPtr_))->numberFake_ = saveNumberFake;
-    
+
     int problemStatus = modelPtr_->problemStatus();
     double objectiveValue =modelPtr_->objectiveValue() * modelPtr_->optimizationDirection();
     CoinAssert (modelPtr_->problemStatus()||modelPtr_->objectiveValue()<1.0e50);
@@ -2253,8 +2271,10 @@ void OsiClpSolverInterface::solveFromHotStart()
     double obj = CoinMax(objectiveValue,saveObjectiveValue);
     if (problemStatus==10||problemStatus<0) {
       // was trying to clean up or something odd
-      if (problemStatus==10)
+      if (problemStatus==10) {
+	obj = saveObjectiveValue;
 	lastAlgorithm_=1; // so won't fail on cutoff (in CbcNode)
+      }
       status=1;
     }
     if (status) {
@@ -2267,29 +2287,31 @@ void OsiClpSolverInterface::solveFromHotStart()
       objectiveValue =modelPtr_->objectiveValue() *
 	modelPtr_->optimizationDirection();
       obj = CoinMax(objectiveValue,saveObjectiveValue);
-      if (!modelPtr_->numberDualInfeasibilities()) { 
+      if (!modelPtr_->numberDualInfeasibilities()) {
 	double limit = 0.0;
 	modelPtr_->getDblParam(ClpDualObjectiveLimit, limit);
 	if (modelPtr_->secondaryStatus()==1&&!problemStatus&&obj<limit) {
 	  obj=limit;
 	  problemStatus=3;
 	}
-	if (!modelPtr_->numberPrimalInfeasibilities()&&obj<limit) { 
+	if (!modelPtr_->numberPrimalInfeasibilities()&&obj<limit) {
 	  problemStatus=0;
 	} else if (problemStatus==10) {
 	  problemStatus=3;
+	  obj = saveObjectiveValue;
 	} else if (!modelPtr_->numberPrimalInfeasibilities()) {
 	  problemStatus=1; // infeasible
-	} 
+	}
       } else {
 	// can't say much
 	//if (problemStatus==3)
 	//modelPtr_->computeObjectiveValue();
 	lastAlgorithm_=1; // so won't fail on cutoff (in CbcNode)
+	obj = saveObjectiveValue;
 	problemStatus=3;
       }
     } else if (!problemStatus) {
-      if (modelPtr_->isDualObjectiveLimitReached()) 
+      if (modelPtr_->isDualObjectiveLimitReached())
 	problemStatus=1; // infeasible
     }
     if (status&&!problemStatus) {
@@ -2392,7 +2414,7 @@ void OsiClpSolverInterface::solveFromHotStart()
     /* If factorization_ NULL then infeasible
        not really sure how could have slipped through.
        But this can't make situation worse */
-    if (factorization_) 
+    if (factorization_)
       smallModel_->setFactorization(*factorization_);
     //int * backColumn = whichColumn+numberColumns;
     const double * lowerBig = modelPtr_->columnLower();
@@ -2401,13 +2423,16 @@ void OsiClpSolverInterface::solveFromHotStart()
     smallModel_->setWhatsChanged(511);
     double * lowerSmall = smallModel_->lowerRegion();
     double * upperSmall = smallModel_->upperRegion();
+    double * solutionSmall = smallModel_->solutionRegion();
     double * lowerSmallReal = smallModel_->columnLower();
     double * upperSmallReal = smallModel_->columnUpper();
     int i;
     double rhsScale = smallModel_->rhsScale();
     const double * columnScale = NULL;
+    const double * rowScale = NULL;
     if (smallModel_->scalingFlag()>0) {
       columnScale = smallModel_->columnScale();
+      rowScale = smallModel_->rowScale();
     }
     // and do bounds in case dual needs them
     // may be infeasible
@@ -2420,6 +2445,8 @@ void OsiClpSolverInterface::solveFromHotStart()
         if (columnScale)
           value /= columnScale[i];
         lowerSmall[i]=value;
+	if (smallModel_->getColumnStatus(i)==ClpSimplex::atLowerBound)
+	  solutionSmall[i]=value;
       }
       if (upperBig[iColumn]<saveUpperOriginal[iColumn]) {
         double value = upperBig[iColumn];
@@ -2428,6 +2455,8 @@ void OsiClpSolverInterface::solveFromHotStart()
         if (columnScale)
           value /= columnScale[i];
         upperSmall[i]=value;
+	if (smallModel_->getColumnStatus(i)==ClpSimplex::atUpperBound)
+	  solutionSmall[i]=value;
       }
       if (upperSmall[i]<lowerSmall[i]-1.0e-8)
 	break;
@@ -2443,7 +2472,30 @@ void OsiClpSolverInterface::solveFromHotStart()
     int saveNumberFake = (static_cast<ClpSimplexDual *>(smallModel_))->numberFake_;
     int status;
     if (!infeasible) {
+      if((modelPtr_->specialOptions()&0x011200000)==0x11200000) {
+	smallModel_->specialOptions_|=2097152;
+	//smallModel_->specialOptions_&=~2097152;
+	delete [] modelPtr_->ray_;
+	delete [] smallModel_->ray_;
+	modelPtr_->ray_=NULL;
+	smallModel_->ray_=NULL;
+      }
       status = static_cast<ClpSimplexDual *>(smallModel_)->fastDual(alwaysFinish);
+      if((modelPtr_->specialOptions()&0x011200000)==0x11200000&&smallModel_->ray_) {
+	if (smallModel_->sequenceOut_<smallModel_->numberColumns_)
+	    modelPtr_->sequenceOut_ = whichColumn[smallModel_->sequenceOut_];
+	else
+	    modelPtr_->sequenceOut_ = whichRow[smallModel_->sequenceOut_-smallModel_->numberColumns_]+modelPtr_->numberColumns_;
+	if (smallModel_->rowScale_) {
+	  // scale ray
+	  double scaleFactor=1.0;
+	  if (smallModel_->sequenceOut_<smallModel_->numberColumns_)
+	    scaleFactor = smallModel_->columnScale_[smallModel_->sequenceOut_];
+	  for (int i = 0; i < smallModel_->numberRows_; i++) {
+	    smallModel_->ray_[i] *= smallModel_->rowScale_[i]*scaleFactor;
+	  }
+	}
+      }
     } else {
       status=0;
       smallModel_->setProblemStatus(1);
@@ -2502,7 +2554,7 @@ void OsiClpSolverInterface::solveFromHotStart()
         modelPtr_->optimizationDirection();
       if (problemStatus!=10)
 	obj = CoinMax(objectiveValue,saveObjectiveValue);
-      if (!smallModel_->numberDualInfeasibilities()) { 
+      if (!smallModel_->numberDualInfeasibilities()) {
         double limit = 0.0;
         modelPtr_->getDblParam(ClpDualObjectiveLimit, limit);
         if (smallModel_->secondaryStatus()==1&&!problemStatus&&obj<limit) {
@@ -2523,7 +2575,7 @@ void OsiClpSolverInterface::solveFromHotStart()
           problemStatus=3;
 #endif
         }
-        if (!smallModel_->numberPrimalInfeasibilities()&&obj<limit) { 
+        if (!smallModel_->numberPrimalInfeasibilities()&&obj<limit) {
           problemStatus=0;
 #if 0
           ClpSimplex temp = *smallModel_;
@@ -2536,7 +2588,7 @@ void OsiClpSolverInterface::solveFromHotStart()
           problemStatus=3;
         } else if (!smallModel_->numberPrimalInfeasibilities()) {
           problemStatus=1; // infeasible
-        } 
+        }
       } else {
         // can't say much
         //if (problemStatus==3)
@@ -2545,7 +2597,7 @@ void OsiClpSolverInterface::solveFromHotStart()
         problemStatus=3;
       }
     } else if (!problemStatus) {
-      if (smallModel_->isDualObjectiveLimitReached()) 
+      if (smallModel_->isDualObjectiveLimitReached())
         problemStatus=1; // infeasible
     }
     if (status&&!problemStatus) {
@@ -2562,6 +2614,7 @@ void OsiClpSolverInterface::solveFromHotStart()
     modelPtr_->setNumberPrimalInfeasibilities(smallModel_->numberPrimalInfeasibilities());
     double * solution = modelPtr_->primalColumnSolution();
     const double * solution2 = smallModel_->solutionRegion();
+    double * djs = modelPtr_->dualColumnSolution();
     if (!columnScale) {
       for (i=0;i<numberColumns2;i++) {
         int iColumn = whichColumn[i];
@@ -2577,9 +2630,72 @@ void OsiClpSolverInterface::solveFromHotStart()
         upperSmallReal[i]=saveUpperOriginal[iColumn];
       }
     }
+    // compute duals and djs
+    double * dual = modelPtr_->dualRowSolution();
+    const double * dual2 = smallModel_->dualRowSolution();
+    if (!rowScale) {
+      for (i=0;i<numberRows2;i++) {
+        int iRow = whichRow[i];
+        dual[iRow]= dual2[i];
+      }
+    } else {
+      for (i=0;i<numberRows2;i++) {
+        int iRow = whichRow[i];
+        dual[iRow]= dual2[i]*rowScale[i];
+      }
+    }
+    memcpy(djs,modelPtr_->objective(),numberColumns*sizeof(double));
+    modelPtr_->clpMatrix()->transposeTimes(-1.0,dual,djs);
     // could combine with loop above
     if (modelPtr_==smallModel_)
       modelPtr_->computeObjectiveValue();
+    if (problemStatus==1&&smallModel_->ray_) {
+      delete [] modelPtr_->ray_;
+      // get ray to full problem
+      int numberRows = modelPtr_->numberRows();
+      int numberRows2 = smallModel_->numberRows();
+      int nCopy = 3*numberRows+2*numberColumns;
+      int nBound = whichRow[nCopy];
+      double * ray = new double [numberRows];
+      memset(ray,0,numberRows*sizeof(double));
+      for (int i = 0; i < numberRows2; i++) {
+	int iRow = whichRow[i];
+	ray[iRow] = smallModel_->ray_[i];
+      }
+      // Column copy of matrix
+      const double * element = getMatrixByCol()->getElements();
+      const int * row = getMatrixByCol()->getIndices();
+      const CoinBigIndex * columnStart = getMatrixByCol()->getVectorStarts();
+      const int * columnLength = getMatrixByCol()->getVectorLengths();
+      // translate
+      for (int jRow = nBound; jRow < 2 * numberRows; jRow++) {
+	int iRow = whichRow[jRow];
+	int iColumn = whichRow[jRow+numberRows];
+	if (modelPtr_->getColumnStatus(iColumn) == ClpSimplex::basic) {
+	  double value = 0.0;
+	  double sum = 0.0;
+	  for (CoinBigIndex j = columnStart[iColumn];
+	       j < columnStart[iColumn] + columnLength[iColumn]; j++) {
+	    if (iRow == row[j]) {
+	      value = element[j];
+	    } else {
+	      sum += ray[row[j]]*element[j];
+	    }
+	  }
+	  ray[iRow] = -sum / value;
+	}
+      }
+      for (int i=0;i<modelPtr_->numberColumns_;i++) {
+	if (modelPtr_->getStatus(i)!=ClpSimplex::basic&&
+	    modelPtr_->columnLower_[i]==modelPtr_->columnUpper_[i])
+	  modelPtr_->setStatus(i,ClpSimplex::isFixed);
+      }
+      modelPtr_->ray_=ray;
+      //delete [] smallModel_->ray_;
+      //smallModel_->ray_=NULL;
+      modelPtr_->directionOut_=smallModel_->directionOut_;
+      lastAlgorithm_=2; // dual
+    }
 #if 1
     if (status&&!problemStatus) {
       memset(modelPtr_->primalRowSolution(),0,numberRows*sizeof(double));
@@ -2686,8 +2802,812 @@ void OsiClpSolverInterface::unmarkHotStart()
   // Make sure whatsChanged not out of sync
   if (!modelPtr_->columnUpperWork_)
     modelPtr_->whatsChanged_ &= ~0xffff;
-  modelPtr_->specialOptions_ = saveData_.specialOptions_; 
+  modelPtr_->specialOptions_ = saveData_.specialOptions_;
 }
+
+#ifdef CONFLICT_CUTS
+// Return a conflict analysis cut from small model
+OsiRowCut *
+OsiClpSolverInterface::smallModelCut(const double * originalLower, const double * originalUpper,
+				     int numberRowsAtContinuous,const int * whichGenerator,
+				     int typeCut)
+{
+  if(smallModel_&&smallModel_->ray_) {
+    //printf("Could do small cut\n");
+    int numberRows = modelPtr_->numberRows();
+    int numberRows2 = smallModel_->numberRows();
+    int numberColumns = modelPtr_->numberColumns();
+    int numberColumns2 = smallModel_->numberColumns();
+    double * arrayD = reinterpret_cast<double *> (spareArrays_);
+    double * saveSolution = arrayD+1;
+    double * saveLower = saveSolution + (numberRows+numberColumns);
+    double * saveUpper = saveLower + (numberRows+numberColumns);
+    double * saveObjective = saveUpper + (numberRows+numberColumns);
+    double * saveLowerOriginal = saveObjective + (numberRows+numberColumns);
+    double * saveUpperOriginal = saveLowerOriginal + numberColumns;
+    //double * lowerOriginal = modelPtr_->columnLower();
+    //double * upperOriginal = modelPtr_->columnUpper();
+    int * savePivot = reinterpret_cast<int *> (saveUpperOriginal + numberColumns);
+    int * whichRow = savePivot+numberRows;
+    int * whichColumn = whichRow + 3*numberRows;
+    int nCopy = 3*numberRows+2*numberColumns;
+    int nBound = whichRow[nCopy];
+    if (smallModel_->sequenceOut_>=0&&smallModel_->sequenceOut_<numberColumns2)
+      modelPtr_->sequenceOut_ = whichColumn[smallModel_->sequenceOut_];
+    else
+      modelPtr_->sequenceOut_ = modelPtr_->numberColumns_+whichRow[smallModel_->sequenceOut_];
+    unsigned char * saveStatus = CoinCopyOfArray(modelPtr_->status_,
+						 numberRows+numberColumns);
+    // get ray to full problem
+    for (int i = 0; i < numberColumns2; i++) {
+      int iColumn = whichColumn[i];
+      modelPtr_->setStatus(iColumn, smallModel_->getStatus(i));
+    }
+    double * ray = new double [numberRows+numberColumns2+numberColumns];
+    char * mark = new char [numberRows];
+    memset(ray,0,(numberRows+numberColumns2+numberColumns)*sizeof(double));
+    double * smallFarkas = ray+numberRows;
+    double * farkas = smallFarkas+numberColumns2;
+    double * saveScale = smallModel_->rowScale_;
+    smallModel_->rowScale_=NULL;
+    smallModel_->transposeTimes(1.0,smallModel_->ray_,smallFarkas);
+    smallModel_->rowScale_=saveScale;
+    for (int i=0;i<numberColumns2;i++)
+      farkas[whichColumn[i]]=smallFarkas[i];
+    memset(mark,0,numberRows);
+    for (int i = 0; i < numberRows2; i++) {
+      int iRow = whichRow[i];
+      modelPtr_->setRowStatus(iRow, smallModel_->getRowStatus(i));
+      ray[iRow] = smallModel_->ray_[i];
+      mark[iRow]=1;
+    }
+    // Column copy of matrix
+    const double * element = getMatrixByCol()->getElements();
+    const int * row = getMatrixByCol()->getIndices();
+    const CoinBigIndex * columnStart = getMatrixByCol()->getVectorStarts();
+    const int * columnLength = getMatrixByCol()->getVectorLengths();
+    // pick up small pivot row
+    int pivotRow = smallModel_->spareIntArray_[3];
+    // translate
+    if (pivotRow>=0)
+      pivotRow=whichRow[pivotRow];
+    modelPtr_->spareIntArray_[3]=pivotRow;
+    for (int jRow = nBound; jRow < 2 * numberRows; jRow++) {
+      int iRow = whichRow[jRow];
+      int iColumn = whichRow[jRow+numberRows];
+      if (modelPtr_->getColumnStatus(iColumn) == ClpSimplex::basic) {
+	double value = 0.0;
+	double sum = 0.0;
+	for (CoinBigIndex j = columnStart[iColumn];
+	     j < columnStart[iColumn] + columnLength[iColumn]; j++) {
+	  if (iRow == row[j]) {
+	    value = element[j];
+	  } else if (mark[row[j]]) {
+	    sum += ray[row[j]]*element[j];
+	  }
+	}
+	double target=farkas[iColumn];
+	if (iRow!=pivotRow) {
+	  ray[iRow] = (target-sum) / value;
+	} else {
+	  printf("what now - direction %d wanted %g sum %g value %g\n",
+		 smallModel_->directionOut_,ray[iRow],
+		 sum,value);
+	}
+	mark[iRow]=1;
+      }
+    }
+    delete [] mark;
+    for (int i=0;i<modelPtr_->numberColumns_;i++) {
+      if (modelPtr_->getStatus(i)!=ClpSimplex::basic&&
+	  modelPtr_->columnLower_[i]==modelPtr_->columnUpper_[i])
+	modelPtr_->setStatus(i,ClpSimplex::isFixed);
+    }
+#if 0
+    {
+      int nBad=0;
+      double * fBig = new double [2*numberColumns+2*numberRows];
+      double * fSmall = fBig+numberColumns;
+      double * effectiveRhs = fSmall+numberColumns;
+      double * effectiveRhs2 = effectiveRhs+numberRows;
+      memset(fBig,0,2*numberColumns*sizeof(double));
+      {
+	memcpy(fBig,modelPtr_->columnLower_,numberColumns*sizeof(double));
+	const double * columnLower = modelPtr_->columnLower_;
+	const double * columnUpper = modelPtr_->columnUpper_;
+	for (int i=0;i<numberColumns2;i++) {
+	  int iBig=whichColumn[i];
+	  if (smallModel_->getStatus(i)==ClpSimplex::atLowerBound||
+	      smallModel_->getStatus(i)==ClpSimplex::isFixed||
+	      columnLower[iBig]==columnUpper[iBig]) {
+	    fSmall[i]=columnLower[iBig];
+	  } else if (smallModel_->getStatus(i)==ClpSimplex::atUpperBound) {
+	    fSmall[i]=columnUpper[iBig];
+	  } else if (i==smallModel_->sequenceOut_) {
+	    if (smallModel_->directionOut_<0) {
+	      // above upper bound
+	      fSmall[i]=columnUpper[iBig];
+	    } else {
+	      // below lower bound
+	      fSmall[i]=columnLower[iBig];
+	    }
+	  } else if (smallModel_->columnLower_[i]==smallModel_->columnUpper_[i]) {
+	    fSmall[i]=smallModel_->columnLower_[i];
+	  }
+	  fBig[whichColumn[i]]=fSmall[i];
+	}
+	{
+	  // only works for one test case
+	  memcpy(effectiveRhs2,modelPtr_->rowUpper_,numberRows*sizeof(double));
+	  double * saveScale = modelPtr_->rowScale_;
+	  ClpPackedMatrix * saveMatrix = modelPtr_->scaledMatrix_;
+	  modelPtr_->rowScale_=NULL;
+	  modelPtr_->scaledMatrix_=NULL;
+	  modelPtr_->times(-1.0,fBig,effectiveRhs2);
+	  modelPtr_->scaledMatrix_=saveMatrix;
+	  modelPtr_->rowScale_=saveScale;
+	  memset(fBig,0,numberColumns*sizeof(double));
+	}
+	const double * rowLower = smallModel_->rowLower_;
+	const double * rowUpper = smallModel_->rowUpper_;
+	int pivotRow = smallModel_->spareIntArray_[3];
+	for (int i=0;i<numberRows2;i++) {
+	  if (smallModel_->getRowStatus(i)==ClpSimplex::atLowerBound||
+	      rowUpper[i]==rowLower[i]||
+	      smallModel_->getRowStatus(i)==ClpSimplex::isFixed) {
+	    effectiveRhs[i]=rowLower[i];
+	    //if (smallModel_->getRowStatus(i)==ClpSimplex::atLowerBound)
+	    //assert (ray[i]>-1.0e-3);
+	  } else if (smallModel_->getRowStatus(i)==ClpSimplex::atUpperBound) {
+	    effectiveRhs[i]=rowUpper[i];
+	    //assert (ray[i]<1.0e-3);
+	  } else {
+	    if (smallModel_->getRowStatus(i)!=ClpSimplex::basic) {
+	      assert (rowUpper[i]>1.0e30||rowLower[i]<-1.0e30); // eventually skip
+	      if (rowUpper[i]<1.0e30)
+		effectiveRhs[i]=rowUpper[i];
+	      else
+		effectiveRhs[i]=rowLower[i];
+	    }
+	  }
+	  if (smallModel_->getRowStatus(i)==ClpSimplex::basic) {
+	    effectiveRhs[i]=0.0;
+	    // we should leave pivot row in and use direction for bound
+	    if (fabs(smallModel_->ray_[i])>1.0e-8) {
+	      printf("Basic small slack value %g on %d - pivotRow %d\n",smallModel_->ray_[i],i,pivotRow);
+	      if (i==pivotRow) {
+		if (smallModel_->directionOut_<0)
+		  effectiveRhs[i]=rowUpper[i];
+		else
+		  effectiveRhs[i]=rowLower[i];
+	      } else {
+		//smallModel_->ray_[i]=0.0;
+	      }
+	    }
+	  }
+	}
+	//ClpPackedMatrix * saveMatrix = smallModel_->scaledMatrix_;
+	double * saveScale = smallModel_->rowScale_;
+	smallModel_->rowScale_=NULL;
+	smallModel_->scaledMatrix_=NULL;
+	smallModel_->times(-1.0,fSmall,effectiveRhs);
+	double bSum=0.0;
+	for (int i=0;i<numberRows2;i++) {
+	  bSum += effectiveRhs[i]*smallModel_->ray_[i];
+	}
+	printf("Small bsum %g\n",bSum);
+	smallModel_->rowScale_=saveScale;
+      }
+      double * saveScale = smallModel_->rowScale_;
+      smallModel_->rowScale_=NULL;
+      memset(fSmall,0,numberColumns*sizeof(double));
+      smallModel_->transposeTimes(1.0,smallModel_->ray_,fSmall);
+      smallModel_->rowScale_=saveScale;
+      ClpPackedMatrix * saveMatrix = modelPtr_->scaledMatrix_;
+      saveScale = modelPtr_->rowScale_;
+      modelPtr_->rowScale_=NULL;
+      modelPtr_->scaledMatrix_=NULL;
+      modelPtr_->transposeTimes(1.0,ray,fBig);
+      modelPtr_->scaledMatrix_=saveMatrix;
+      modelPtr_->rowScale_=saveScale;
+      for (int i=0;i<numberColumns2;i++) {
+	int iBig=whichColumn[i];
+	if (fabs(fBig[iBig]-fSmall[i])>1.0e-4) {
+	  printf("small %d %g big %d %g\n",
+		 i,fSmall[i],iBig,fBig[iBig]);
+	  nBad++;
+	}
+      }
+      delete [] fBig;
+      if (nBad)
+	printf("Bad %d odd %d\n",nBad,2*numberRows-nBound);
+    }
+#endif
+    modelPtr_->ray_=ray;
+    lastAlgorithm_=2;
+    modelPtr_->directionOut_=smallModel_->directionOut_;
+    OsiRowCut * cut = modelCut(originalLower,originalUpper,
+			       numberRowsAtContinuous,whichGenerator,typeCut);
+    smallModel_->deleteRay();
+    memcpy(modelPtr_->status_,saveStatus,numberRows+numberColumns);
+    delete [] saveStatus;
+    if (cut) {
+      //printf("got small cut\n");
+      //delete cut;
+      //cut=NULL;
+    }
+    return cut;
+  } else {
+    return NULL;
+  }
+}
+static int debugMode=0;
+// Return a conflict analysis cut from model
+//      If type is 0 then genuine cut, if 1 then only partially processed
+OsiRowCut *
+OsiClpSolverInterface::modelCut(const double * originalLower, const double * originalUpper,
+				int numberRowsAtContinuous,const int * whichGenerator,
+				int typeCut)
+{
+  OsiRowCut * cut=NULL;
+  //return NULL;
+  if(modelPtr_->ray_) {
+    if (lastAlgorithm_==2) {
+      //printf("Could do normal cut\n");
+      // could use existing arrays
+      int numberRows=modelPtr_->numberRows_;
+      int numberColumns=modelPtr_->numberColumns_;
+      double * farkas = new double [2*numberColumns+numberRows];
+      double * bound = farkas + numberColumns;
+      double * effectiveRhs = bound + numberColumns;
+      /*const*/ double * ray = modelPtr_->ray_;
+      // have to get rid of local cut rows
+      whichGenerator -= numberRowsAtContinuous;
+      int badRows=0;
+      for (int iRow=numberRowsAtContinuous;iRow<numberRows;iRow++) {
+	int iType=whichGenerator[iRow];
+	if ((iType>=0&&iType<20000)) {
+	  if (fabs(ray[iRow])>1.0e-10) {
+	    badRows++;
+	  }
+	  ray[iRow]=0.0;
+	}
+      }
+      ClpSimplex debugModel;
+      if ((debugMode&4)!=0)
+	debugModel = *modelPtr_;
+      if (badRows&&(debugMode&1)!=0)
+	printf("%d rows from local cuts\n",badRows);
+      // get farkas row
+      ClpPackedMatrix * saveMatrix = modelPtr_->scaledMatrix_;
+      double * saveScale = modelPtr_->rowScale_;
+      modelPtr_->rowScale_=NULL;
+      modelPtr_->scaledMatrix_=NULL;
+      memset(farkas,0,(2*numberColumns+numberRows)*sizeof(double));
+      modelPtr_->transposeTimes(-1.0,ray,farkas);
+      //const char * integerInformation = modelPtr_->integerType_;
+      //assert (integerInformation);
+
+      int sequenceOut = modelPtr_->sequenceOut_;
+      // Put nonzero bounds in bound
+      const double * columnLower = modelPtr_->columnLower_;
+      const double * columnUpper = modelPtr_->columnUpper_;
+      const double * columnValue = modelPtr_->columnActivity_;
+      int numberBad=0;
+      int nNonzeroBasic=0;
+      for (int i=0;i<numberColumns;i++) {
+	double value = farkas[i];
+	double boundValue=0.0;
+	if (modelPtr_->getStatus(i)==ClpSimplex::basic) {
+	  // treat as zero if small
+	  if (fabs(value)<1.0e-8) {
+	    value=0.0;
+	    farkas[i]=0.0;
+	  }
+	  if (value) {
+	    //printf("basic %d direction %d farkas %g\n",
+	    //i,modelPtr_->directionOut_,value);
+	    nNonzeroBasic++;
+	    if (value<0.0)
+	      boundValue=columnLower[i];
+	    else
+	      boundValue=columnUpper[i];
+	  }
+	} else if (fabs(value)>1.0e-10) {
+	  if (value<0.0) {
+	    if (columnValue[i]>columnLower[i]+1.0e-5&&value<-1.0e-7) {
+	      //printf("bad %d alpha %g not at lower\n",i,value);
+	      numberBad++;
+	    }
+	    boundValue=columnLower[i];
+	  } else {
+	    if (columnValue[i]<columnUpper[i]-1.0e-5&&value>1.0e-7) {
+	      //printf("bad %d alpha %g not at upper\n",i,value);
+	      numberBad++;
+	    }
+	    boundValue=columnUpper[i];
+	  }
+	}
+	bound[i]=boundValue;
+	if (fabs(boundValue)>1.0e10)
+	  numberBad++;
+      }
+      const double * rowLower = modelPtr_->rowLower_;
+      const double * rowUpper = modelPtr_->rowUpper_;
+      //int pivotRow = modelPtr_->spareIntArray_[3];
+      //bool badPivot=pivotRow<0;
+      for (int i=0;i<numberRows;i++) {
+	double value = ray[i];
+	double rhsValue=0.0;
+	if (modelPtr_->getRowStatus(i)==ClpSimplex::basic) {
+	  // treat as zero if small
+	  if (fabs(value)<1.0e-8) {
+	    value=0.0;
+	    ray[i]=0.0;
+	  }
+	  if (value) {
+	    //printf("row basic %d direction %d ray %g\n",
+	    //	   i,modelPtr_->directionOut_,value);
+	    nNonzeroBasic++;
+	    if (value<0.0)
+	      rhsValue=rowLower[i];
+	    else
+	      rhsValue=rowUpper[i];
+	  }
+	} else if (fabs(value)>1.0e-10) {
+	  if (value<0.0)
+	    rhsValue=rowLower[i];
+	  else
+	    rhsValue=rowUpper[i];
+	}
+	effectiveRhs[i]=rhsValue;
+      }
+      {
+	double bSum=0.0;
+	for (int i=0;i<numberRows;i++) {
+	  bSum += effectiveRhs[i]*ray[i];
+	}
+	//printf("before bounds - bSum %g\n",bSum);
+      }
+      modelPtr_->times(-1.0,bound,effectiveRhs);
+      double bSum=0.0;
+      for (int i=0;i<numberRows;i++) {
+	bSum += effectiveRhs[i]*ray[i];
+      }
+#if 0
+      double bSum2=0.0;
+#if 1
+      {
+	int iSequence = modelPtr_->sequenceOut_;
+	double lower,value,upper;
+	if (iSequence<numberColumns) {
+	  lower=columnLower[iSequence];
+	  value=columnValue[iSequence];
+	  upper=columnUpper[iSequence];
+	} else {
+	  iSequence -= numberColumns;
+	  lower=rowLower[iSequence];
+	  value=modelPtr_->rowActivity_[iSequence];
+	  upper=rowUpper[iSequence];
+	}
+	if (value<lower)
+	  bSum2=value-lower;
+	else if (value>upper)
+	  bSum2=-(value-upper);
+	else
+	  printf("OUCHXX %g %g %g\n",
+		 lower,value,upper);
+      }
+#else
+      if (modelPtr_->valueOut_<modelPtr_->lowerOut_)
+	bSum2=modelPtr_->valueOut_-modelPtr_->lowerOut_;
+      else if (modelPtr_->valueOut_>modelPtr_->upperOut_)
+	bSum2=-(modelPtr_->valueOut_-modelPtr_->upperOut_);
+      else
+	printf("OUCHXX %g %g %g\n",
+	       modelPtr_->lowerOut_,modelPtr_->valueOut_,modelPtr_->upperOut_);
+#endif
+#if 0
+      if (fabs(bSum-bSum2)>1.0e-5)
+	printf("XX ");
+      printf("after bounds - bSum %g - bSum2 %g\n",bSum,bSum2);
+#endif
+#endif
+      modelPtr_->scaledMatrix_=saveMatrix;
+      modelPtr_->rowScale_=saveScale;
+      if (numberBad||bSum>-1.0e-4/*||nNonzeroBasic>1*/ /*||bSum2>-1.0e-4*/) {
+#if PRINT_CONFLICT>1 //ndef NDEBUG
+	printf("bad BOUND bSum %g (bSum2 %g) - %d bad - %d basic\n",
+	       bSum,bSum2,numberBad,nNonzeroBasic);
+#endif
+      } else {
+	if (numberColumns<0)
+	  debugMode=-numberColumns;
+	if ((debugMode&4)!=0) {
+	  int * tempC = new int[numberColumns];
+	  double * temp = new double[numberColumns];
+	  int n=0;
+	  for (int i=0;i<numberColumns;i++) {
+	    if (fabs(farkas[i])>1.0e-12) {
+	      temp[n]=farkas[i];
+	      tempC[n++]=i;
+	    }
+	  }
+	  debugModel.addRow(n,tempC,temp,bSum,bSum);
+	  delete [] tempC;
+	  delete [] temp;
+	}
+	if ((debugMode&2)!=0) {
+	  ClpSimplex dual=*modelPtr_;
+	  dual.setLogLevel(63);
+	  dual.scaling(0);
+	  dual.dual();
+	  assert (dual.problemStatus_==1);
+	  if (dual.ray_) {
+	    double * farkas2 = dual.reducedCost_;
+	    // Put nonzero bounds in farkas
+	    const double * columnLower = dual.columnLower_;
+	    const double * columnUpper = dual.columnUpper_;
+	    for (int i=0;i<numberColumns;i++) {
+	      farkas2[i]=0.0;
+	      if (dual.getStatus(i)==ClpSimplex::atLowerBound||
+		  columnLower[i]==columnUpper[i]) {
+		farkas2[i]=columnLower[i];
+	      } else if (dual.getStatus(i)==ClpSimplex::atUpperBound) {
+		farkas2[i]=columnUpper[i];
+	      } else if (i==dual.sequenceOut_) {
+		if (dual.directionOut_<0) {
+		  // above upper bound
+		  farkas2[i]=columnUpper[i];
+		} else {
+		  // below lower bound
+		  farkas2[i]=columnLower[i];
+		}
+	      } else if (columnLower[i]==columnUpper[i]) {
+		farkas2[i]=columnLower[i];
+	      }
+	    }
+	    double * effectiveRhs2 = dual.rowActivity_;
+	    const double * rowLower = dual.rowLower_;
+	    const double * rowUpper = dual.rowUpper_;
+	    int pivotRow = dual.spareIntArray_[3];
+	    for (int i=0;i<numberRows;i++) {
+	      if (dual.getRowStatus(i)==ClpSimplex::atLowerBound||
+		  rowUpper[i]==rowLower[i]||
+		  dual.getRowStatus(i)==ClpSimplex::isFixed) {
+		effectiveRhs2[i]=rowLower[i];
+	      } else if (dual.getRowStatus(i)==ClpSimplex::atUpperBound) {
+		effectiveRhs2[i]=rowUpper[i];
+	      } else {
+		if (dual.getRowStatus(i)!=ClpSimplex::basic) {
+		  assert (rowUpper[i]>1.0e30||rowLower[i]<-1.0e30); // eventually skip
+		  if (rowUpper[i]<1.0e30)
+		    effectiveRhs2[i]=rowUpper[i];
+		  else
+		    effectiveRhs2[i]=rowLower[i];
+		}
+	      }
+	      if (dual.getRowStatus(i)==ClpSimplex::basic) {
+		effectiveRhs2[i]=0.0;
+		// we should leave pivot row in and use direction for bound
+		if (fabs(dual.ray_[i])>1.0e-8) {
+		  printf("Basic slack value %g on %d - pivotRow %d\n",ray[i],i,pivotRow);
+		  if (i==pivotRow) {
+		    if (dual.directionOut_<0)
+		      effectiveRhs[i]=rowUpper[i];
+		    else
+		      effectiveRhs[i]=rowLower[i];
+		  } else {
+		    dual.ray_[i]=0.0;
+		  }
+		}
+	      }
+	    }
+	    dual.times(-1.0,farkas2,effectiveRhs2);
+	    double bSum2=0.0;
+	    for (int i=0;i<numberRows;i++) {
+	      bSum2 += effectiveRhs2[i]*dual.ray_[i];
+	    }
+	    printf("Alternate bSum %g\n",bSum2);
+	    memset(farkas2,0,numberColumns*sizeof(double));
+	    dual.transposeTimes(-1.0,dual.ray_,farkas2);
+	    int nBad=0;
+	    double largest=-1.0;
+	    double smallest=1.0e30;
+	    for (int i=0;i<numberColumns;i++) {
+	      //if (fabs(farkas[i])>1.0e-12)
+	      //printf("%d ptr farkas %g dual farkas %g\n",i,farkas[i],farkas2[i]);
+	      if (fabs(farkas[i]-farkas2[i])>1.0e-7) {
+		nBad++;
+		largest=CoinMax(largest,fabs(farkas[i]-farkas2[i]));
+		smallest=CoinMin(smallest,fabs(farkas[i]-farkas2[i]));
+		//printf("%d ptr farkas %g dual farkas %g\n",i,farkas[i],farkas2[i]);
+	      }
+	    }
+	    if (nBad)
+	      printf("%d farkas difference %g to %g\n",nBad,smallest,largest);
+	    dual.primal();
+	    assert (dual.problemStatus_==1);
+	    assert (!nBad);
+	  }
+	}
+	const char * integerInformation = modelPtr_->integerType_;
+	assert (integerInformation);
+	int * conflict = new int[numberColumns];
+	double * sort = new double [numberColumns];
+	double relax=0.0;
+	int nConflict=0;
+	int nOriginal=0;
+	int nFixed=0;
+	for (int iColumn=0;iColumn<numberColumns;iColumn++) {
+	  double thisRelax = 0.0;
+	  if (integerInformation[iColumn]) {
+	    if ((debugMode&1)!=0)
+	    printf("%d status %d %g <= %g <=%g (orig %g, %g) farkas %g\n",
+		   iColumn,modelPtr_->getStatus(iColumn),columnLower[iColumn],
+		   modelPtr_->columnActivity_[iColumn],columnUpper[iColumn],
+		   originalLower[iColumn],originalUpper[iColumn],
+		   farkas[iColumn]);
+	    double gap = originalUpper[iColumn]-originalLower[iColumn];
+	    if (!gap)
+	      continue;
+	    if (gap==columnUpper[iColumn]-columnLower[iColumn])
+	      nOriginal++;
+	    if (columnUpper[iColumn]==columnLower[iColumn])
+	      nFixed++;
+	    if (fabs(farkas[iColumn])<1.0e-15) {
+	      farkas[iColumn]=0.0;
+	      continue;
+	    }
+	    // temp
+	    if (gap>=20000.0&&false) {
+	      // can't use
+	      if (farkas[iColumn]<0.0) {
+		assert(originalLower[iColumn]-columnLower[iColumn]<=0.0);
+		// farkas is negative - relax lower bound all way
+		relax +=
+		  farkas[iColumn]*(originalLower[iColumn]-columnLower[iColumn]);
+	      } else {
+		assert(originalUpper[iColumn]-columnUpper[iColumn]>=0.0);
+		// farkas is positive - relax upper bound all way
+		relax +=
+		  farkas[iColumn]*(originalUpper[iColumn]-columnUpper[iColumn]);
+	      }
+	      continue;
+	    }
+	    if (originalLower[iColumn]==columnLower[iColumn]) {
+	      // may need to be careful if odd basic (due to local cut)
+	      if (farkas[iColumn]>0.0/*&&(modelPtr_->getStatus(iColumn)==ClpSimplex::atUpperBound
+					||modelPtr_->getStatus(iColumn)==ClpSimplex::isFixed
+					||iColumn==sequenceOut)*/) {
+		// farkas is positive - add to list
+		gap=originalUpper[iColumn]-columnUpper[iColumn];
+		if (gap) {
+		  sort[nConflict]=-farkas[iColumn]*gap;
+		  conflict[nConflict++]=iColumn;
+		}
+		//assert (gap>columnUpper[iColumn]-columnLower[iColumn]);
+	      }
+	    } else if (originalUpper[iColumn]==columnUpper[iColumn]) {
+	      // may need to be careful if odd basic (due to local cut)
+	      if (farkas[iColumn]<0.0/*&&(modelPtr_->getStatus(iColumn)==ClpSimplex::atLowerBound
+					||modelPtr_->getStatus(iColumn)==ClpSimplex::isFixed
+					||iColumn==sequenceOut)*/) {
+		// farkas is negative - add to list
+		gap=columnLower[iColumn]-originalLower[iColumn];
+		if (gap) {
+		  sort[nConflict]=farkas[iColumn]*gap;
+		  conflict[nConflict++]=iColumn;
+		}
+		//assert (gap>columnUpper[iColumn]-columnLower[iColumn]);
+	      }
+	    } else {
+	      // can't use
+	      if (farkas[iColumn]<0.0) {
+		assert(originalLower[iColumn]-columnLower[iColumn]<=0.0);
+		// farkas is negative - relax lower bound all way
+		thisRelax =
+		  farkas[iColumn]*(originalLower[iColumn]-columnLower[iColumn]);
+	      } else {
+		assert(originalUpper[iColumn]-columnUpper[iColumn]>=0.0);
+		// farkas is positive - relax upper bound all way
+		thisRelax =
+		  farkas[iColumn]*(originalUpper[iColumn]-columnUpper[iColumn]);
+	      }
+	    }
+	  } else {
+	    // not integer - but may have been got at
+	    double gap = originalUpper[iColumn]-originalLower[iColumn];
+	    if (gap>columnUpper[iColumn]-columnLower[iColumn]) {
+	      // can't use
+	      if (farkas[iColumn]<0.0) {
+		assert(originalLower[iColumn]-columnLower[iColumn]<=0.0);
+		// farkas is negative - relax lower bound all way
+		thisRelax =
+		  farkas[iColumn]*(originalLower[iColumn]-columnLower[iColumn]);
+	      } else {
+		assert(originalUpper[iColumn]-columnUpper[iColumn]>=0.0);
+		// farkas is positive - relax upper bound all way
+		thisRelax =
+		  farkas[iColumn]*(originalUpper[iColumn]-columnUpper[iColumn]);
+	      }
+	    }
+	  }
+	  assert (thisRelax>=0.0);
+	  relax += thisRelax;
+	}
+	if (relax+bSum>-1.0e-4||!nConflict) {
+	  if (relax+bSum>-1.0e-4) {
+#if PRINT_CONFLICT>1 //ndef NDEBUG
+	    printf("General integers relax bSum to %g\n",relax+bSum);
+#endif
+	  } else {
+#if PRINT_CONFLICT
+	    printf("All variables relaxed and still infeasible - what does this mean?\n");
+#endif
+	    int nR=0;
+	    for (int i=0;i<numberRows;i++) {
+	      if (fabs(ray[i])>1.0e-10)
+		nR++;
+	      else
+		ray[i]=0.0;
+	    }
+	    int nC=0;
+	    for (int i=0;i<numberColumns;i++) {
+	      if (fabs(farkas[i])>1.0e-10)
+		nC++;
+	      else
+		farkas[i]=0.0;
+	    }
+	    if (nR<3&&nC<5) {
+	      printf("BAD %d nonzero rows, %d nonzero columns\n",nR,nC);
+	    }
+	  }
+	} else if (nConflict < 1000) {
+#if PRINT_CONFLICT>1 //ndef NDEBUG
+	  if (nConflict<5)
+	    printf("BOUNDS violation bSum %g (relaxed %g) - %d at original bounds, %d fixed - %d in conflict\n",bSum,
+		   relax+bSum,nOriginal,nFixed,nConflict);
+#endif
+	  CoinSort_2(sort,sort+nConflict,conflict);
+	  if ((debugMode&4)!=0) {
+	    double * temp = new double[numberColumns];
+	    int * tempC = new int[numberColumns];
+	    int n=0;
+	    for (int j=0;j<nConflict;j++) {
+	      int i=conflict[j];
+	      if (fabs(farkas[i])>1.0e-12) {
+		temp[n]=farkas[i];
+		tempC[n++]=i;
+	      }
+	    }
+	    debugModel.addRow(n,tempC,temp,bSum,bSum);
+	    delete [] tempC;
+	    delete [] temp;
+	  }
+	  int nC=nConflict;
+	  for (int i=0;i<nConflict;i++) {
+	    int iColumn=conflict[i];
+	    if (fabs(sort[i])!=fabs(farkas[iColumn])&&originalUpper[iColumn]==1.0)
+	      printf("odd %d %g %d %g\n",i,sort[i],iColumn,farkas[iColumn]);
+	  }
+	  bSum+=relax;
+	  double saveBsum = bSum;
+	  // we can't use same values
+	  double totalChange=0;
+	  while (nConflict) {
+	    double last = -sort[nConflict-1];
+	    int kConflict=nConflict;
+	    while (kConflict) {
+	      double change = -sort[kConflict-1];
+	      if (change>last+1.0e-5)
+		break;
+	      totalChange += change;
+	      kConflict--;
+	    }
+	    if (bSum+totalChange>-1.0e-4)
+	      break;
+#if 0
+	    //int iColumn=conflict[nConflict-1];
+	    double change=-sort[nConflict-1];
+	    if (bSum+change>-1.0e-4)
+	      break;
+	    nConflict--;
+	    bSum += change;
+#else
+	    nConflict=kConflict;
+	    bSum += totalChange;
+#endif
+	  }
+	  if (!nConflict) {
+	    int nR=0;
+	    for (int i=0;i<numberRows;i++) {
+	      if (fabs(ray[i])>1.0e-10)
+		nR++;
+	      else
+		ray[i]=0.0;
+	    }
+	    int nC=0;
+	    for (int i=0;i<numberColumns;i++) {
+	      if (fabs(farkas[i])>1.0e-10)
+		nC++;
+	      else
+		farkas[i]=0.0;
+	    }
+#if 1 //PRINT_CONFLICT>1 //ndef NDEBUG
+	    {
+	      printf("BAD2 - zero nConflict %d nonzero rows, %d nonzero columns\n",nR,nC);
+	    }
+#endif
+	  }
+	  // no point doing if no reduction (or big?) ?
+	  if (nConflict<nC+1&&nConflict<100&&nConflict) {
+	    cut=new OsiRowCut();
+	    cut->setUb(COIN_DBL_MAX);
+	    if (!typeCut) {
+	      double lo=1.0;
+	      for (int i=0;i<nConflict;i++) {
+		int iColumn = conflict[i];
+		if (originalLower[iColumn]==columnLower[iColumn]) {
+		  // must be at least one higher
+		  sort[i]=1.0;
+		  lo += originalLower[iColumn];
+		} else {
+		  // must be at least one lower
+		  sort[i]=-1.0;
+		  lo -= originalUpper[iColumn];
+		}
+	      }
+	      cut->setLb(lo);
+	      cut->setRow(nConflict,conflict,sort);
+#if PRINT_CONFLICT
+	      printf("CUT has %d (started at %d) - final bSum %g\n",nConflict,nC,bSum);
+#endif
+	      if ((debugMode&4)!=0) {
+		debugModel.addRow(nConflict,conflict,sort,lo,COIN_DBL_MAX);
+		debugModel.writeMps("bad.mps");
+	      }
+	    } else {
+	      // just save for use later
+	      // first take off small
+	      int nC2=nC;
+	      while (nC2) {
+		//int iColumn=conflict[nConflict-1];
+		double change=-sort[nC2-1];
+		if (saveBsum+change>-1.0e-4||change>1.0e-4)
+		  break;
+		nC2--;
+		saveBsum += change;
+	      }
+	      cut->setLb(saveBsum);
+	      for (int i=0;i<nC2;i++) {
+		int iColumn = conflict[i];
+		sort[i]=farkas[iColumn];
+	      }
+	      cut->setRow(nC2,conflict,sort);
+	      // mark as globally valid
+	      cut->setGloballyValid();
+#if PRINT_CONFLICT>1 //ndef NDEBUG
+	      printf("Stem CUT has %d (greedy %d - with small %d) - saved bSum %g final greedy bSum %g\n",
+		     nC2,nConflict,nC,saveBsum,bSum);
+#endif
+	    }
+	  }
+	}
+	delete [] conflict;
+	delete [] sort;
+      }
+      delete [] farkas;
+    } else {
+#if PRINT_CONFLICT>1 //ndef NDEBUG
+      printf("Bad dual ray\n");
+#endif
+    }
+    modelPtr_->deleteRay();
+  }
+  return cut;
+}
+#endif
 
 //#############################################################################
 // Problem information methods (original data)
@@ -2726,7 +3646,7 @@ bool OsiClpSolverInterface::isContinuous(int colNumber) const
   if ( integerInformation_[colNumber]==0 ) return true;
   return false;
 }
-bool 
+bool
 OsiClpSolverInterface::isBinary(int colNumber) const
 {
 #ifndef NDEBUG
@@ -2740,15 +3660,15 @@ OsiClpSolverInterface::isBinary(int colNumber) const
   } else {
     const double * cu = getColUpper();
     const double * cl = getColLower();
-    if ((cu[colNumber]== 1 || cu[colNumber]== 0) && 
+    if ((cu[colNumber]== 1 || cu[colNumber]== 0) &&
 	(cl[colNumber]== 0 || cl[colNumber]==1))
       return true;
-    else 
+    else
       return false;
   }
 }
 //-----------------------------------------------------------------------------
-bool 
+bool
 OsiClpSolverInterface::isInteger(int colNumber) const
 {
 #ifndef NDEBUG
@@ -2757,13 +3677,13 @@ OsiClpSolverInterface::isInteger(int colNumber) const
     indexError(colNumber,"isInteger");
   }
 #endif
-  if ( integerInformation_==NULL || integerInformation_[colNumber]==0 ) 
+  if ( integerInformation_==NULL || integerInformation_[colNumber]==0 )
     return false;
   else
     return true;
 }
 //-----------------------------------------------------------------------------
-bool 
+bool
 OsiClpSolverInterface::isIntegerNonBinary(int colNumber) const
 {
 #ifndef NDEBUG
@@ -2779,7 +3699,7 @@ OsiClpSolverInterface::isIntegerNonBinary(int colNumber) const
   }
 }
 //-----------------------------------------------------------------------------
-bool 
+bool
 OsiClpSolverInterface::isFreeBinary(int colNumber) const
 {
 #ifndef NDEBUG
@@ -2795,7 +3715,7 @@ OsiClpSolverInterface::isFreeBinary(int colNumber) const
     const double * cl = getColLower();
     if ((cu[colNumber]== 1) && (cl[colNumber]== 0))
       return true;
-    else 
+    else
       return false;
   }
 }
@@ -2804,7 +3724,7 @@ OsiClpSolverInterface::isFreeBinary(int colNumber) const
     1 - binary (may get fixed later)
     2 - general integer (may get fixed later)
 */
-const char * 
+const char *
 OsiClpSolverInterface::getColType(bool refresh) const
 {
   if (!columnType_||refresh) {
@@ -2818,7 +3738,7 @@ OsiClpSolverInterface::getColType(bool refresh) const
       const double * cl = getColLower();
       for (int i = 0 ; i < numCols ; ++i) {
 	if (integerInformation_[i]) {
-	  if ((cu[i]== 1 || cu[i]== 0) && 
+	  if ((cu[i]== 1 || cu[i]== 0) &&
 	      (cl[i]== 0 || cl[i]==1))
 	    columnType_[i]=1;
 	  else
@@ -2837,7 +3757,7 @@ OsiClpSolverInterface::getColType(bool refresh) const
    Note: This function returns true if the the column
    is binary or a general integer.
 */
-bool 
+bool
 OsiClpSolverInterface::isOptionalInteger(int colNumber) const
 {
 #ifndef NDEBUG
@@ -2846,13 +3766,13 @@ OsiClpSolverInterface::isOptionalInteger(int colNumber) const
     indexError(colNumber,"isInteger");
   }
 #endif
-  if ( integerInformation_==NULL || integerInformation_[colNumber]!=2 ) 
+  if ( integerInformation_==NULL || integerInformation_[colNumber]!=2 )
     return false;
   else
     return true;
 }
 /* Set the index-th variable to be an optional integer variable */
-void 
+void
 OsiClpSolverInterface::setOptionalInteger(int index)
 {
   if (!integerInformation_) {
@@ -2875,7 +3795,7 @@ OsiClpSolverInterface::setOptionalInteger(int index)
 const CoinPackedMatrix * OsiClpSolverInterface::getMatrixByRow() const
 {
   if ( matrixByRow_ == NULL ||
-       matrixByRow_->getNumElements() != 
+       matrixByRow_->getNumElements() !=
        modelPtr_->clpMatrix()->getNumElements() ) {
     delete matrixByRow_;
     matrixByRow_ = new CoinPackedMatrix();
@@ -2899,10 +3819,10 @@ const CoinPackedMatrix * OsiClpSolverInterface::getMatrixByCol() const
 {
   return modelPtr_->matrix();
 }
-  
+
 // Get pointer to mutable column-wise copy of matrix (returns NULL if not meaningful)
-CoinPackedMatrix * 
-OsiClpSolverInterface::getMutableMatrixByCol() const 
+CoinPackedMatrix *
+OsiClpSolverInterface::getMutableMatrixByCol() const
 {
   ClpPackedMatrix * matrix = dynamic_cast<ClpPackedMatrix *>(modelPtr_->matrix_) ;
   if (matrix)
@@ -3003,7 +3923,7 @@ OsiClpSolverInterface::setInteger(const int* indices, int len)
     array [getNumCols()] is an array of values for the objective.
     This defaults to a series of set operations and is here for speed.
 */
-void 
+void
 OsiClpSolverInterface::setObjective(const double * array)
 {
   // Say can't gurantee optimal basis etc
@@ -3021,7 +3941,7 @@ OsiClpSolverInterface::setObjective(const double * array)
     array [getNumCols()] is an array of values for the objective.
     This defaults to a series of set operations and is here for speed.
 */
-void 
+void
 OsiClpSolverInterface::setColLower(const double * array)
 {
   // Say can't gurantee optimal basis etc
@@ -3034,7 +3954,7 @@ OsiClpSolverInterface::setColLower(const double * array)
     array [getNumCols()] is an array of values for the objective.
     This defaults to a series of set operations and is here for speed.
 */
-void 
+void
 OsiClpSolverInterface::setColUpper(const double * array)
 {
   // Say can't gurantee optimal basis etc
@@ -3044,7 +3964,7 @@ OsiClpSolverInterface::setColUpper(const double * array)
 		    modelPtr_->columnUpper());
 }
 //-----------------------------------------------------------------------------
-void OsiClpSolverInterface::setColSolution(const double * cs) 
+void OsiClpSolverInterface::setColSolution(const double * cs)
 {
   // Say can't gurantee optimal basis etc
   lastAlgorithm_=999;
@@ -3060,7 +3980,7 @@ void OsiClpSolverInterface::setColSolution(const double * cs)
   modelPtr_->times(1.0,modelPtr_->primalColumnSolution(),modelPtr_->primalRowSolution());
 }
 //-----------------------------------------------------------------------------
-void OsiClpSolverInterface::setRowPrice(const double * rs) 
+void OsiClpSolverInterface::setRowPrice(const double * rs)
 {
   CoinDisjointCopyN(rs,modelPtr_->numberRows(),
 		    modelPtr_->dualRowSolution());
@@ -3078,9 +3998,9 @@ void OsiClpSolverInterface::setRowPrice(const double * rs)
 //#############################################################################
 // Problem modifying methods (matrix)
 //#############################################################################
-void 
+void
 OsiClpSolverInterface::addCol(const CoinPackedVectorBase& vec,
-			      const double collb, const double colub,   
+			      const double collb, const double colub,
 			      const double obj)
 {
   int numberColumns = modelPtr_->numberColumns();
@@ -3104,29 +4024,29 @@ OsiClpSolverInterface::addCol(const CoinPackedVectorBase& vec,
 }
 //-----------------------------------------------------------------------------
 /* Add a column (primal variable) to the problem. */
-void 
+void
 OsiClpSolverInterface::addCol(int numberElements, const int * rows, const double * elements,
-			   const double collb, const double colub,   
-			   const double obj) 
+			   const double collb, const double colub,
+			   const double obj)
 {
   CoinPackedVector column(numberElements, rows, elements);
   addCol(column,collb,colub,obj);
 }
 // Add a named column (primal variable) to the problem.
-void 
+void
 OsiClpSolverInterface::addCol(const CoinPackedVectorBase& vec,
-		      const double collb, const double colub,   
-		      const double obj, std::string name) 
+		      const double collb, const double colub,
+		      const double obj, std::string name)
 {
   int ndx = getNumCols() ;
   addCol(vec,collb,colub,obj) ;
   setColName(ndx,name) ;
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::addCols(const int numcols,
 			       const CoinPackedVectorBase * const * cols,
-			       const double* collb, const double* colub,   
+			       const double* collb, const double* colub,
 			       const double* obj)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|8|64|128|256));
@@ -3171,15 +4091,15 @@ OsiClpSolverInterface::addCols(const int numcols,
     CoinMemcpyN(integerInformation_,numberColumns,temp);
     delete [] integerInformation_;
     integerInformation_ = temp;
-    for (iCol = 0; iCol < numcols; iCol++) 
+    for (iCol = 0; iCol < numcols; iCol++)
       integerInformation_[numberColumns+iCol]=0;
   }
   freeCachedResults();
 }
-void 
+void
 OsiClpSolverInterface::addCols(const int numcols,
 			       const int * columnStarts, const int * rows, const double * elements,
-			       const double* collb, const double* colub,   
+			       const double* collb, const double* colub,
 			       const double* obj)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|8|64|128|256));
@@ -3224,13 +4144,13 @@ OsiClpSolverInterface::addCols(const int numcols,
     CoinMemcpyN(integerInformation_,numberColumns,temp);
     delete [] integerInformation_;
     integerInformation_ = temp;
-    for (iCol = 0; iCol < numcols; iCol++) 
+    for (iCol = 0; iCol < numcols; iCol++)
       integerInformation_[numberColumns+iCol]=0;
   }
   freeCachedResults();
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::deleteCols(const int num, const int * columnIndices)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|8|64|128|256));
@@ -3277,7 +4197,7 @@ OsiClpSolverInterface::deleteCols(const int num, const int * columnIndices)
   freeCachedResults();
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::addRow(const CoinPackedVectorBase& vec,
 			      const double rowlb, const double rowub)
 {
@@ -3302,9 +4222,9 @@ void OsiClpSolverInterface::addRow(const CoinPackedVectorBase& vec,
   setRowName(ndx,name) ;
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::addRow(const CoinPackedVectorBase& vec,
-			      const char rowsen, const double rowrhs,   
+			      const char rowsen, const double rowrhs,
 			      const double rowrng)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|4|16|32));
@@ -3321,9 +4241,9 @@ OsiClpSolverInterface::addRow(const CoinPackedVectorBase& vec,
   freeCachedResults1();
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::addRow(int numberElements, const int * columns, const double * elements,
-			   const double rowlb, const double rowub) 
+			   const double rowlb, const double rowub)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|4|16|32));
   freeCachedResults0();
@@ -3341,7 +4261,7 @@ OsiClpSolverInterface::addRow(int numberElements, const int * columns, const dou
   freeCachedResults1();
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::addRows(const int numrows,
 			       const CoinPackedVectorBase * const * rows,
 			       const double* rowlb, const double* rowub)
@@ -3355,13 +4275,13 @@ OsiClpSolverInterface::addRows(const int numrows,
   double * upper = modelPtr_->rowUpper()+numberRows;
   int iRow;
   for (iRow = 0; iRow < numrows; iRow++) {
-    if (rowlb) 
+    if (rowlb)
       lower[iRow]= forceIntoRange(rowlb[iRow], -OsiClpInfinity, OsiClpInfinity);
-    else 
+    else
       lower[iRow]=-OsiClpInfinity;
-    if (rowub) 
+    if (rowub)
       upper[iRow]= forceIntoRange(rowub[iRow], -OsiClpInfinity, OsiClpInfinity);
-    else 
+    else
       upper[iRow]=OsiClpInfinity;
     if (lower[iRow]<-1.0e27)
       lower[iRow]=-COIN_DBL_MAX;
@@ -3374,10 +4294,10 @@ OsiClpSolverInterface::addRows(const int numrows,
   freeCachedResults1();
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::addRows(const int numrows,
 			       const CoinPackedVectorBase * const * rows,
-			       const char* rowsen, const double* rowrhs,   
+			       const char* rowsen, const double* rowrhs,
 			       const double* rowrng)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|4|16|32));
@@ -3390,7 +4310,7 @@ OsiClpSolverInterface::addRows(const int numrows,
   int iRow;
   for (iRow = 0; iRow < numrows; iRow++) {
     double rowlb = 0, rowub = 0;
-    convertSenseToBound(rowsen[iRow], rowrhs[iRow], rowrng[iRow], 
+    convertSenseToBound(rowsen[iRow], rowrhs[iRow], rowrng[iRow],
 			rowlb, rowub);
     lower[iRow]= forceIntoRange(rowlb, -OsiClpInfinity, OsiClpInfinity);
     upper[iRow]= forceIntoRange(rowub, -OsiClpInfinity, OsiClpInfinity);
@@ -3404,7 +4324,7 @@ OsiClpSolverInterface::addRows(const int numrows,
   modelPtr_->matrix()->appendRows(numrows,rows);
   freeCachedResults1();
 }
-void 
+void
 OsiClpSolverInterface::addRows(const int numrows,
 			       const int * rowStarts, const int * columns, const double * element,
 			       const double* rowlb, const double* rowub)
@@ -3418,13 +4338,13 @@ OsiClpSolverInterface::addRows(const int numrows,
   double * upper = modelPtr_->rowUpper()+numberRows;
   int iRow;
   for (iRow = 0; iRow < numrows; iRow++) {
-    if (rowlb) 
+    if (rowlb)
       lower[iRow]= forceIntoRange(rowlb[iRow], -OsiClpInfinity, OsiClpInfinity);
-    else 
+    else
       lower[iRow]=-OsiClpInfinity;
-    if (rowub) 
+    if (rowub)
       upper[iRow]= forceIntoRange(rowub[iRow], -OsiClpInfinity, OsiClpInfinity);
-    else 
+    else
       upper[iRow]=OsiClpInfinity;
     if (lower[iRow]<-1.0e27)
       lower[iRow]=-COIN_DBL_MAX;
@@ -3438,7 +4358,7 @@ OsiClpSolverInterface::addRows(const int numrows,
   freeCachedResults1();
 }
 //-----------------------------------------------------------------------------
-void 
+void
 OsiClpSolverInterface::deleteRows(const int num, const int * rowIndices)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(1|2|4|16|32));
@@ -3497,7 +4417,7 @@ OsiClpSolverInterface::deleteRows(const int num, const int * rowIndices)
     }
   }
   lastAlgorithm_ = saveAlgorithm;
-  if ((specialOptions_&131072)!=0) 
+  if ((specialOptions_&131072)!=0)
     lastNumberRows_=modelPtr_->numberRows();
 }
 
@@ -3507,7 +4427,7 @@ OsiClpSolverInterface::deleteRows(const int num, const int * rowIndices)
 
 void
 OsiClpSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
-				   const double* collb, const double* colub,   
+				   const double* collb, const double* colub,
 				   const double* obj,
 				   const double* rowlb, const double* rowub)
 {
@@ -3533,7 +4453,7 @@ OsiClpSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
 */
 void OsiClpSolverInterface::loadProblem (const ClpMatrixBase& matrix,
 					 const double* collb,
-					 const double* colub,   
+					 const double* colub,
 					 const double* obj,
 					 const double* rowlb,
 					 const double* rowub)
@@ -3577,7 +4497,7 @@ void
 OsiClpSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
 				   const double* collb, const double* colub,
 				   const double* obj,
-				   const char* rowsen, const double* rowrhs,   
+				   const char* rowsen, const double* rowrhs,
 				   const double* rowrng)
 {
   modelPtr_->whatsChanged_ = 0;
@@ -3592,7 +4512,7 @@ OsiClpSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
     for (int i=0;i<numrows;i++)
       rowsen[i]='G';
     rowsenUse = rowsen;
-  } 
+  }
   const double * rowrhsUse = rowrhs;
   if (!rowrhs) {
     double * rowrhs = new double [numrows];
@@ -3609,7 +4529,7 @@ OsiClpSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
   }
   double * rowlb = new double[numrows];
   double * rowub = new double[numrows];
-  for (int i = numrows-1; i >= 0; --i) {   
+  for (int i = numrows-1; i >= 0; --i) {
     convertSenseToBound(rowsenUse[i],rowrhsUse[i],rowrngUse[i],rowlb[i],rowub[i]);
   }
   if (rowsen!=rowsenUse)
@@ -3677,7 +4597,7 @@ OsiClpSolverInterface::loadProblem(const int numcols, const int numrows,
 				   const double* value,
 				   const double* collb, const double* colub,
 				   const double* obj,
-				   const char* rowsen, const double* rowrhs,   
+				   const char* rowsen, const double* rowrhs,
 				   const double* rowrng)
 {
   modelPtr_->whatsChanged_ = 0;
@@ -3689,7 +4609,7 @@ OsiClpSolverInterface::loadProblem(const int numcols, const int numrows,
     for (int i=0;i<numrows;i++)
       rowsen[i]='G';
     rowsenUse = rowsen;
-  } 
+  }
   const double * rowrhsUse = rowrhs;
   if (!rowrhs) {
     double * rowrhs = new double [numrows];
@@ -3706,7 +4626,7 @@ OsiClpSolverInterface::loadProblem(const int numcols, const int numrows,
   }
   double * rowlb = new double[numrows];
   double * rowub = new double[numrows];
-  for (int i = numrows-1; i >= 0; --i) {   
+  for (int i = numrows-1; i >= 0; --i) {
     convertSenseToBound(rowsenUse[i],rowrhsUse[i],rowrngUse[i],rowlb[i],rowub[i]);
   }
   if (rowsen!=rowsenUse)
@@ -3721,7 +4641,7 @@ OsiClpSolverInterface::loadProblem(const int numcols, const int numrows,
   delete[] rowub;
 }
 // This loads a model from a coinModel object - returns number of errors
-int 
+int
 OsiClpSolverInterface::loadFromCoinModel (  CoinModel & modelObject, bool keepSolution)
 {
   modelPtr_->whatsChanged_ = 0;
@@ -3746,7 +4666,7 @@ OsiClpSolverInterface::loadFromCoinModel (  CoinModel & modelObject, bool keepSo
   CoinWarmStart * ws = getWarmStart();
   bool restoreBasis = keepSolution && numberRows&&numberRows==getNumRows()&&
     numberColumns==getNumCols();
-  loadProblem(matrix, 
+  loadProblem(matrix,
               columnLower, columnUpper, objective, rowLower, rowUpper);
   if (restoreBasis)
     setWarmStart(ws);
@@ -3783,7 +4703,7 @@ OsiClpSolverInterface::loadFromCoinModel (  CoinModel & modelObject, bool keepSo
     //    <<numberErrors
     //    <<CoinMessageEol;
   }
-  modelPtr_->optimizationDirection_ = modelObject.optimizationDirection();  
+  modelPtr_->optimizationDirection_ = modelObject.optimizationDirection();
   return numberErrors;
 }
 
@@ -3808,7 +4728,7 @@ void OsiClpSolverInterface::writeMps(const char * filename,
   const char * const * const rowNames = modelPtr_->rowNamesAsChar();
   const char * const * const columnNames = modelPtr_->columnNamesAsChar();
   // Fall back on Osi version - possibly with names
-  OsiSolverInterface::writeMpsNative(fullname.c_str(), 
+  OsiSolverInterface::writeMpsNative(fullname.c_str(),
 				     const_cast<const char **>(rowNames),
                                      const_cast<const char **>(columnNames),0,2,objSense,
 				     numberSOS_,setInfo_);
@@ -3818,10 +4738,10 @@ void OsiClpSolverInterface::writeMps(const char * filename,
   }
 }
 
-int 
-OsiClpSolverInterface::writeMpsNative(const char *filename, 
+int
+OsiClpSolverInterface::writeMpsNative(const char *filename,
 		  const char ** rowNames, const char ** columnNames,
-		  int formatType,int numberAcross,double objSense) const 
+		  int formatType,int numberAcross,double objSense) const
 {
   return OsiSolverInterface::writeMpsNative(filename, rowNames, columnNames,
 			       formatType, numberAcross,objSense,
@@ -3840,14 +4760,13 @@ ClpSimplex * OsiClpSolverInterface::getModelPtr() const
   //bool inCbcOrOther = (modelPtr_->specialOptions()&0x03000000)!=0;
   return modelPtr_;
 }
-
-//------------------------------------------------------------------- 
+//-------------------------------------------------------------------
 
 //#############################################################################
 // Constructors, destructors clone and assignment
 //#############################################################################
 //-------------------------------------------------------------------
-// Default Constructor 
+// Default Constructor
 //-------------------------------------------------------------------
 OsiClpSolverInterface::OsiClpSolverInterface ()
 :
@@ -3867,7 +4786,7 @@ smallestChangeInCut_(1.0e-10),
 largestAway_(-1.0),
 spareArrays_(NULL),
 matrixByRow_(NULL),
-matrixByRowAtContinuous_(NULL),  
+matrixByRowAtContinuous_(NULL),
 integerInformation_(NULL),
 whichRange_(NULL),
 fakeMinInSimplex_(false),
@@ -3879,7 +4798,7 @@ lastNumberRows_(0),
 continuousModel_(NULL),
 fakeObjective_(NULL)
 {
-  //printf("in default %x\n",this);
+  //printf("%p %d null constructor\n",this,xxxxxx);xxxxxx++;
   modelPtr_=NULL;
   notOwned_=false;
   disasterHandler_ = new OsiClpDisasterHandler();
@@ -3909,7 +4828,7 @@ OsiSolverInterface * OsiClpSolverInterface::clone(bool CopyData) const
 
 
 //-------------------------------------------------------------------
-// Copy constructor 
+// Copy constructor
 //-------------------------------------------------------------------
 OsiClpSolverInterface::OsiClpSolverInterface (
                   const OsiClpSolverInterface & rhs)
@@ -3934,27 +4853,27 @@ itlimOrig_(9999999),
 lastAlgorithm_(0),
 notOwned_(false),
 matrixByRow_(NULL),
-matrixByRowAtContinuous_(NULL),  
+matrixByRowAtContinuous_(NULL),
 integerInformation_(NULL),
 whichRange_(NULL),
 fakeMinInSimplex_(rhs.fakeMinInSimplex_)
 {
-  //printf("in copy %x - > %x\n",&rhs,this);
-  if ( rhs.modelPtr_  ) 
+  //printf("%p %d copy constructor %p\n",this,xxxxxx,&rhs);xxxxxx++;
+  if ( rhs.modelPtr_  )
     modelPtr_ = new ClpSimplex(*rhs.modelPtr_);
   else
     modelPtr_ = new ClpSimplex();
-  if ( rhs.baseModel_  ) 
+  if ( rhs.baseModel_  )
     baseModel_ = new ClpSimplex(*rhs.baseModel_);
   else
     baseModel_ = NULL;
-  if ( rhs.continuousModel_  ) 
+  if ( rhs.continuousModel_  )
     continuousModel_ = new ClpSimplex(*rhs.continuousModel_);
   else
     continuousModel_ = NULL;
   if (rhs.matrixByRowAtContinuous_)
     matrixByRowAtContinuous_ = new CoinPackedMatrix(*rhs.matrixByRowAtContinuous_);
-  if ( rhs.disasterHandler_  ) 
+  if ( rhs.disasterHandler_  )
     disasterHandler_ = dynamic_cast<OsiClpDisasterHandler *>(rhs.disasterHandler_->clone());
   else
     disasterHandler_ = NULL;
@@ -3963,7 +4882,7 @@ fakeMinInSimplex_(rhs.fakeMinInSimplex_)
   else
     fakeObjective_ = NULL;
   linearObjective_ = modelPtr_->objective();
-  if ( rhs.ws_ ) 
+  if ( rhs.ws_ )
     ws_ = new CoinWarmStartBasis(*rhs.ws_);
   basis_ = rhs.basis_;
   if (rhs.integerInformation_) {
@@ -4011,7 +4930,7 @@ itlimOrig_(9999999),
 lastAlgorithm_(0),
 notOwned_(false),
 matrixByRow_(NULL),
-matrixByRowAtContinuous_(NULL),  
+matrixByRowAtContinuous_(NULL),
 integerInformation_(NULL),
 whichRange_(NULL),
 fakeMinInSimplex_(false),
@@ -4038,21 +4957,21 @@ fakeObjective_(NULL)
   }
   fillParamMaps();
 }
-    
+
 // Releases so won't error
-void 
+void
 OsiClpSolverInterface::releaseClp()
 {
   modelPtr_=NULL;
   notOwned_=false;
 }
-    
+
 //-------------------------------------------------------------------
-// Destructor 
+// Destructor
 //-------------------------------------------------------------------
 OsiClpSolverInterface::~OsiClpSolverInterface ()
 {
-  //printf("in destructor %x\n",this);
+  //printf("%p destructor\n",this);
   freeCachedResults();
   if (!notOwned_)
     delete modelPtr_;
@@ -4081,27 +5000,27 @@ OsiClpSolverInterface::~OsiClpSolverInterface ()
 }
 
 //-------------------------------------------------------------------
-// Assignment operator 
+// Assignment operator
 //-------------------------------------------------------------------
 OsiClpSolverInterface &
 OsiClpSolverInterface::operator=(const OsiClpSolverInterface& rhs)
 {
-  if (this != &rhs) {    
+  if (this != &rhs) {
     //printf("in = %x - > %x\n",&rhs,this);
     OsiSolverInterface::operator=(rhs);
     freeCachedResults();
     if (!notOwned_)
       delete modelPtr_;
     delete ws_;
-    if ( rhs.modelPtr_  ) 
+    if ( rhs.modelPtr_  )
       modelPtr_ = new ClpSimplex(*rhs.modelPtr_);
     delete baseModel_;
-    if ( rhs.baseModel_  ) 
+    if ( rhs.baseModel_  )
       baseModel_ = new ClpSimplex(*rhs.baseModel_);
     else
       baseModel_ = NULL;
     delete continuousModel_;
-    if ( rhs.continuousModel_  ) 
+    if ( rhs.continuousModel_  )
       continuousModel_ = new ClpSimplex(*rhs.continuousModel_);
     else
       continuousModel_ = NULL;
@@ -4113,7 +5032,7 @@ OsiClpSolverInterface::operator=(const OsiClpSolverInterface& rhs)
     else
       matrixByRowAtContinuous_=NULL;
     delete disasterHandler_;
-    if ( rhs.disasterHandler_  ) 
+    if ( rhs.disasterHandler_  )
       disasterHandler_ = dynamic_cast<OsiClpDisasterHandler *>(rhs.disasterHandler_->clone());
     else
       disasterHandler_ = NULL;
@@ -4138,7 +5057,7 @@ OsiClpSolverInterface::operator=(const OsiClpSolverInterface& rhs)
       integerInformation_ = new char[numberColumns];
       CoinMemcpyN(rhs.integerInformation_,	numberColumns,integerInformation_);
     }
-    if ( rhs.ws_ ) 
+    if ( rhs.ws_ )
       ws_ = new CoinWarmStartBasis(*rhs.ws_);
     else
       ws_=NULL;
@@ -4178,7 +5097,7 @@ void OsiClpSolverInterface::applyRowCut( const OsiRowCut & rowCut )
 /* Apply a collection of row cuts which are all effective.
    applyCuts seems to do one at a time which seems inefficient.
 */
-void 
+void
 OsiClpSolverInterface::applyRowCuts(int numberCuts, const OsiRowCut * cuts)
 {
   if (numberCuts) {
@@ -4187,18 +5106,18 @@ OsiClpSolverInterface::applyRowCuts(int numberCuts, const OsiRowCut * cuts)
 
     // Thanks to js
     const OsiRowCut * * cutsp = new const OsiRowCut * [numberCuts];
-    for (int i=0;i<numberCuts;i++) 
+    for (int i=0;i<numberCuts;i++)
       cutsp[i] = &cuts[i];
-    
+
     applyRowCuts(numberCuts, cutsp);
-    
+
     delete [] cutsp;
   }
 }
 /* Apply a collection of row cuts which are all effective.
    applyCuts seems to do one at a time which seems inefficient.
 */
-void 
+void
 OsiClpSolverInterface::applyRowCuts(int numberCuts, const OsiRowCut ** cuts)
 {
   int i;
@@ -4220,7 +5139,7 @@ OsiClpSolverInterface::applyRowCuts(int numberCuts, const OsiRowCut ** cuts)
   basis_.resize(numberRows+numberCuts,modelPtr_->numberColumns());
   // redo as relaxed - use modelPtr_-> addRows with starts etc
   int size = 0;
-  for (i=0;i<numberCuts;i++) 
+  for (i=0;i<numberCuts;i++)
     size += cuts[i]->row().getNumElements();
   CoinBigIndex * starts = new CoinBigIndex [numberCuts+1];
   int * indices = new int[size];
@@ -4318,7 +5237,7 @@ OsiClpSolverInterface::applyRowCuts(int numberCuts, const OsiRowCut ** cuts)
 //#############################################################################
 
 OsiSolverInterface::ApplyCutsReturnCode
-OsiClpSolverInterface::applyCuts( const OsiCuts & cs, double effectivenessLb ) 
+OsiClpSolverInterface::applyCuts( const OsiCuts & cs, double effectivenessLb )
 {
   OsiSolverInterface::ApplyCutsReturnCode retVal;
   int i;
@@ -4371,11 +5290,11 @@ OsiClpSolverInterface::applyCuts( const OsiCuts & cs, double effectivenessLb )
   // now apply
   applyRowCuts(nAdd,addCuts);
   delete [] addCuts;
-  
+
   return retVal;
 }
 // Extend scale factors
-void 
+void
 OsiClpSolverInterface::redoScaleFactors(int numberAdd,const CoinBigIndex * starts,
 					const int * indices, const double * elements)
 {
@@ -4458,44 +5377,46 @@ void OsiClpSolverInterface::applyColCut( const OsiColCut & cc )
 //#############################################################################
 
 
-//------------------------------------------------------------------- 
+//-------------------------------------------------------------------
 
 void OsiClpSolverInterface::freeCachedResults() const
-{  
+{
   // Say can't gurantee optimal basis etc
   lastAlgorithm_=999;
   delete [] rowsense_;
   delete [] rhs_;
   delete [] rowrange_;
   delete matrixByRow_;
-  if (modelPtr_&&modelPtr_->scaledMatrix_) {
-    delete modelPtr_->scaledMatrix_;
-    modelPtr_->scaledMatrix_=NULL;
-  }
   //delete ws_;
   rowsense_=NULL;
   rhs_=NULL;
   rowrange_=NULL;
   matrixByRow_=NULL;
   //ws_ = NULL;
-  if (modelPtr_&&modelPtr_->clpMatrix()) {
-    modelPtr_->clpMatrix()->refresh(modelPtr_); // make sure all clean
-#ifndef NDEBUG
-    ClpPackedMatrix * clpMatrix = dynamic_cast<ClpPackedMatrix *> (modelPtr_->clpMatrix());
-    if (clpMatrix) {
-      if (clpMatrix->getNumCols())
-	assert (clpMatrix->getNumRows()==modelPtr_->getNumRows());
-      if (clpMatrix->getNumRows())
-	assert (clpMatrix->getNumCols()==modelPtr_->getNumCols());
+  if (!notOwned_&&modelPtr_) {
+    if(modelPtr_->scaledMatrix_) {
+      delete modelPtr_->scaledMatrix_;
+      modelPtr_->scaledMatrix_=NULL;
     }
+    if (modelPtr_->clpMatrix()) {
+      modelPtr_->clpMatrix()->refresh(modelPtr_); // make sure all clean
+#ifndef NDEBUG
+      ClpPackedMatrix * clpMatrix = dynamic_cast<ClpPackedMatrix *> (modelPtr_->clpMatrix());
+      if (clpMatrix) {
+	if (clpMatrix->getNumCols())
+	  assert (clpMatrix->getNumRows()==modelPtr_->getNumRows());
+	if (clpMatrix->getNumRows())
+	  assert (clpMatrix->getNumCols()==modelPtr_->getNumCols());
+      }
 #endif
+    }
   }
 }
 
-//------------------------------------------------------------------- 
+//-------------------------------------------------------------------
 
 void OsiClpSolverInterface::freeCachedResults0() const
-{  
+{
   delete [] rowsense_;
   delete [] rhs_;
   delete [] rowrange_;
@@ -4504,10 +5425,10 @@ void OsiClpSolverInterface::freeCachedResults0() const
   rowrange_=NULL;
 }
 
-//------------------------------------------------------------------- 
+//-------------------------------------------------------------------
 
 void OsiClpSolverInterface::freeCachedResults1() const
-{  
+{
   // Say can't gurantee optimal basis etc
   lastAlgorithm_=999;
   delete matrixByRow_;
@@ -4533,17 +5454,17 @@ void OsiClpSolverInterface::extractSenseRhsRange() const
   if (rowsense_ == NULL) {
     // all three must be NULL
     assert ((rhs_ == NULL) && (rowrange_ == NULL));
-    
+
     int nr=modelPtr_->numberRows();
     if ( nr!=0 ) {
       rowsense_ = new char[nr];
       rhs_ = new double[nr];
       rowrange_ = new double[nr];
       std::fill(rowrange_,rowrange_+nr,0.0);
-      
+
       const double * lb = modelPtr_->rowLower();
       const double * ub = modelPtr_->rowUpper();
-      
+
       int i;
       for ( i=0; i<nr; i++ ) {
         convertBoundToSense(lb[i], ub[i], rowsense_[i], rhs_[i], rowrange_[i]);
@@ -4552,7 +5473,7 @@ void OsiClpSolverInterface::extractSenseRhsRange() const
   }
 }
 // Set language
-void 
+void
 OsiClpSolverInterface::newLanguage(CoinMessages::Language language)
 {
   modelPtr_->newLanguage(language);
@@ -4566,23 +5487,23 @@ OsiClpSolverInterface::fillParamMaps()
   assert (static_cast<int> (OsiMaxNumIteration)==        static_cast<int>(ClpMaxNumIteration));
   assert (static_cast<int> (OsiMaxNumIterationHotStart)==static_cast<int>(ClpMaxNumIterationHotStart));
   //assert (static_cast<int> (OsiLastIntParam)==           static_cast<int>(ClpLastIntParam));
-  
+
   assert (static_cast<int> (OsiDualObjectiveLimit)==  static_cast<int>(ClpDualObjectiveLimit));
   assert (static_cast<int> (OsiPrimalObjectiveLimit)==static_cast<int>(ClpPrimalObjectiveLimit));
   assert (static_cast<int> (OsiDualTolerance)==       static_cast<int>(ClpDualTolerance));
   assert (static_cast<int> (OsiPrimalTolerance)==     static_cast<int>(ClpPrimalTolerance));
   assert (static_cast<int> (OsiObjOffset)==           static_cast<int>(ClpObjOffset));
   //assert (static_cast<int> (OsiLastDblParam)==        static_cast<int>(ClpLastDblParam));
-  
+
   assert (static_cast<int> (OsiProbName)==    static_cast<int> (ClpProbName));
   //strParamMap_[OsiLastStrParam] = ClpLastStrParam;
 }
 // Sets up basis
-void 
+void
 OsiClpSolverInterface::setBasis ( const CoinWarmStartBasis & basis)
 {
   setBasis(basis,modelPtr_);
-  setWarmStart(&basis); 
+  setWarmStart(&basis);
 }
 // Warm start
 CoinWarmStartBasis
@@ -4612,8 +5533,8 @@ OsiClpSolverInterface::getBasis(ClpSimplex * model) const
   return basis;
 }
 // Warm start from statusArray
-CoinWarmStartBasis * 
-OsiClpSolverInterface::getBasis(const unsigned char * statusArray) const 
+CoinWarmStartBasis *
+OsiClpSolverInterface::getBasis(const unsigned char * statusArray) const
 {
   int iRow,iColumn;
   int numberRows = modelPtr_->numberRows();
@@ -4637,7 +5558,7 @@ OsiClpSolverInterface::getBasis(const unsigned char * statusArray) const
   return basis;
 }
 // Sets up basis
-void 
+void
 OsiClpSolverInterface::setBasis ( const CoinWarmStartBasis & basis,
 				  ClpSimplex * model)
 {
@@ -4658,7 +5579,7 @@ OsiClpSolverInterface::setBasis ( const CoinWarmStartBasis & basis,
   if (basis.getNumArtificial()!=numberRows||
       basis.getNumStructural()!=numberColumns) {
     CoinWarmStartBasis basis2 = basis;
-    // resize 
+    // resize
     basis2.resize(numberRows,numberColumns);
     // move status
     model->createStatus();
@@ -4690,7 +5611,7 @@ OsiClpSolverInterface::setBasis ( const CoinWarmStartBasis & basis,
   }
 }
 // Warm start difference from basis_ to statusArray
-CoinWarmStartDiff * 
+CoinWarmStartDiff *
 OsiClpSolverInterface::getBasisDiff(const unsigned char * statusArray) const
 {
   int iRow,iColumn;
@@ -4721,15 +5642,15 @@ OsiClpSolverInterface::getBasisDiff(const unsigned char * statusArray) const
   Read an mps file from the given filename - returns number of errors
   (see CoinMpsIO class)
 */
-int 
+int
 OsiClpSolverInterface::readMps(const char *filename,
-			       const char *extension ) 
+			       const char *extension )
 {
   // Get rid of integer stuff
   delete [] integerInformation_;
   integerInformation_=NULL;
   freeCachedResults();
-  
+
   CoinMpsIO m;
   m.setInfinity(getInfinity());
   m.passInMessageHandler(modelPtr_->messageHandler());
@@ -4761,7 +5682,7 @@ OsiClpSolverInterface::readMps(const char *filename,
 
     // set problem name
     setStrParam(OsiProbName,m.getProblemName());
-    
+
     // no errors
     loadProblem(*m.getMatrixByCol(),m.getColLower(),m.getColUpper(),
 		m.getObjCoefficients(),m.getRowSense(),m.getRightHandSide(),
@@ -4779,7 +5700,7 @@ OsiClpSolverInterface::readMps(const char *filename,
       }
       setInteger(index,n);
       delete [] index;
-      if (n) 
+      if (n)
         modelPtr_->copyInIntegerInformation(integer);
     }
 
@@ -4796,23 +5717,23 @@ OsiClpSolverInterface::readMps(const char *filename,
     for (iRow=0;iRow<nRows;iRow++) {
       const char * name = m.rowName(iRow);
       rowNames.push_back(name);
-      if (nameDiscipline) 
+      if (nameDiscipline)
 	OsiSolverInterface::setRowName(iRow,name) ;
     }
-    
+
     int iColumn;
     columnNames.reserve(nCols);
     for (iColumn=0;iColumn<nCols;iColumn++) {
       const char * name = m.columnName(iColumn);
       columnNames.push_back(name);
-      if (nameDiscipline) 
+      if (nameDiscipline)
 	OsiSolverInterface::setColName(iColumn,name) ;
     }
     modelPtr_->copyNames(rowNames,columnNames);
   }
   return numberErrors;
 }
-int 
+int
 OsiClpSolverInterface::readMps(const char *filename, const char*extension,
 			    int & numberSets, CoinSet ** & sets)
 {
@@ -4823,19 +5744,19 @@ OsiClpSolverInterface::readMps(const char *filename, const char*extension,
 }
 /* Read an mps file from the given filename returns
    number of errors (see OsiMpsReader class) */
-int 
+int
 OsiClpSolverInterface::readMps(const char *filename,bool keepNames,bool allowErrors)
 {
   // Get rid of integer stuff
   delete [] integerInformation_;
   integerInformation_=NULL;
   freeCachedResults();
-  
+
   CoinMpsIO m;
   m.setInfinity(getInfinity());
   m.passInMessageHandler(modelPtr_->messageHandler());
   *m.messagesPointer()=modelPtr_->coinMessages();
-  m.setSmallElementValue(CoinMax(modelPtr_->getSmallElementValue(), 
+  m.setSmallElementValue(CoinMax(modelPtr_->getSmallElementValue(),
 				 m.getSmallElementValue()));
 
   delete [] setInfo_;
@@ -4875,7 +5796,7 @@ OsiClpSolverInterface::readMps(const char *filename,bool keepNames,bool allowErr
       int * column = NULL;
       double * element = NULL;
       int status=m.readQuadraticMps(NULL,start,column,element,2);
-      if (!status) 
+      if (!status)
 	modelPtr_->loadQuadraticObjective(nCols,start,column,element);
       delete [] start;
       delete [] column;
@@ -4893,7 +5814,7 @@ OsiClpSolverInterface::readMps(const char *filename,bool keepNames,bool allowErr
       }
       setInteger(index,n);
       delete [] index;
-      if (n) 
+      if (n)
         modelPtr_->copyInIntegerInformation(integer);
     }
     if (keepNames) {
@@ -4907,16 +5828,16 @@ OsiClpSolverInterface::readMps(const char *filename,bool keepNames,bool allowErr
       for (iRow=0;iRow<nRows;iRow++) {
 	const char * name = m.rowName(iRow);
 	rowNames.push_back(name);
-	if (nameDiscipline) 
+	if (nameDiscipline)
 	  OsiSolverInterface::setRowName(iRow,name) ;
       }
-      
+
       int iColumn;
       columnNames.reserve(nCols);
       for (iColumn=0;iColumn<nCols;iColumn++) {
 	const char * name = m.columnName(iColumn);
 	columnNames.push_back(name);
-	if (nameDiscipline) 
+	if (nameDiscipline)
 	  OsiSolverInterface::setColName(iColumn,name) ;
       }
       modelPtr_->copyNames(rowNames,columnNames);
@@ -4925,7 +5846,7 @@ OsiClpSolverInterface::readMps(const char *filename,bool keepNames,bool allowErr
   return numberErrors;
 }
 // Read file in LP format (with names)
-int 
+int
 OsiClpSolverInterface::readLp(const char *filename, const double epsilon )
 {
   CoinLpIO m;
@@ -4971,27 +5892,35 @@ OsiClpSolverInterface::readLp(const char *filename, const double epsilon )
   for (iRow=0;iRow<nRows;iRow++) {
     const char * name = m.rowName(iRow);
     rowNames.push_back(name);
-    if (nameDiscipline) 
+    if (nameDiscipline)
       OsiSolverInterface::setRowName(iRow,name) ;
   }
-  
+
   int iColumn;
   columnNames.reserve(nCols);
   for (iColumn=0;iColumn<nCols;iColumn++) {
     const char * name = m.columnName(iColumn);
     columnNames.push_back(name);
-    if (nameDiscipline) 
+    if (nameDiscipline)
       OsiSolverInterface::setColName(iColumn,name) ;
   }
   modelPtr_->copyNames(rowNames,columnNames);
+  if (m.numberSets()) {
+    // SOS
+    numberSOS_=m.numberSets();
+    setInfo_ = new CoinSet[numberSOS_];
+    CoinSet ** sets = m.setInformation();
+    for (int i=0;i<numberSOS_;i++)
+      setInfo_[i]=*sets[i];
+  }
   return(0);
 }
 /* Write the problem into an Lp file of the given filename.
    If objSense is non zero then -1.0 forces the code to write a
    maximization objective and +1.0 to write a minimization one.
    If 0.0 then solver can do what it wants.
-   This version calls writeLpNative with names */
-void 
+    */
+void
 OsiClpSolverInterface::writeLp(const char *filename,
                                const char *extension ,
                                double epsilon ,
@@ -5009,19 +5938,18 @@ OsiClpSolverInterface::writeLp(const char *filename,
     // no extension so no trailing period
     fullname = f;
   }
-  // get names
-  const char * const * const rowNames = modelPtr_->rowNamesAsChar();
-  const char * const * const columnNames = modelPtr_->columnNamesAsChar();
-  // Fall back on Osi version - possibly with names
-  OsiSolverInterface::writeLpNative(fullname.c_str(), 
-				    rowNames,columnNames, epsilon, numberAcross,
-				    decimals, objSense,changeNameOnRange);
-  if (rowNames) {
-    modelPtr_->deleteNamesAsChar(rowNames, modelPtr_->numberRows_+1);
-    modelPtr_->deleteNamesAsChar(columnNames, modelPtr_->numberColumns_);
+  FILE *fp = NULL;
+  fp = fopen(fullname.c_str(),"w");
+  if (!fp) {
+    printf("### ERROR: in OsiSolverInterface::writeLpNative(): unable to open file %s\n",
+	   fullname.c_str());
+    exit(1);
   }
+  writeLp(fp, epsilon, numberAcross,
+	  decimals, objSense,changeNameOnRange);
+  fclose(fp);
 }
-void 
+void
 OsiClpSolverInterface::writeLp(FILE * fp,
                                double epsilon ,
                                int numberAcross ,
@@ -5032,10 +5960,64 @@ OsiClpSolverInterface::writeLp(FILE * fp,
   // get names
   const char * const * const rowNames = modelPtr_->rowNamesAsChar();
   const char * const * const columnNames = modelPtr_->columnNamesAsChar();
-  // Fall back on Osi version - possibly with names
-  OsiSolverInterface::writeLpNative(fp,
-				    rowNames,columnNames, epsilon, numberAcross,
-				    decimals, objSense,changeNameOnRange);
+  if (!numberSOS_) {
+    // Fall back on Osi version - possibly with names
+    OsiSolverInterface::writeLpNative(fp,
+				      rowNames,columnNames, epsilon, numberAcross,
+				      decimals, objSense,changeNameOnRange);
+  } else {
+    // need own version
+   const int numcols = getNumCols();
+   char *integrality = new char[numcols];
+   bool hasInteger = false;
+
+   for (int i=0; i<numcols; i++) {
+     if (isInteger(i)) {
+       integrality[i] = 1;
+       hasInteger = true;
+     } else {
+       integrality[i] = 0;
+     }
+   }
+
+   // Get multiplier for objective function - default 1.0
+   double *objective = new double[numcols];
+   const double *curr_obj = getObjCoefficients();
+
+   //if(getObjSense() * objSense < 0.0) {
+   double locObjSense = (objSense == 0 ? 1 : objSense);
+   if(getObjSense() * locObjSense < 0.0) {
+     for (int i=0; i<numcols; i++) {
+       objective[i] = - curr_obj[i];
+     }
+   }
+   else {
+     for (int i=0; i<numcols; i++) {
+       objective[i] = curr_obj[i];
+     }
+   }
+
+   CoinLpIO writer;
+   writer.setInfinity(getInfinity());
+   writer.setEpsilon(epsilon);
+   writer.setNumberAcross(numberAcross);
+   writer.setDecimals(decimals);
+
+   writer.setLpDataWithoutRowAndColNames(*getMatrixByRow(),
+		     getColLower(), getColUpper(),
+		     objective, hasInteger ? integrality : 0,
+		     getRowLower(), getRowUpper());
+
+   writer.setLpDataRowAndColNames(rowNames, columnNames);
+
+   //writer.print();
+   delete [] objective;
+   delete[] integrality;
+   // do SOS
+   writer.loadSOS(numberSOS_,setInfo_);
+   writer.writeLp(fp, epsilon, numberAcross, decimals,
+			 changeNameOnRange);
+  }
   if (rowNames) {
     modelPtr_->deleteNamesAsChar(rowNames, modelPtr_->numberRows_+1);
     modelPtr_->deleteNamesAsChar(columnNames, modelPtr_->numberColumns_);
@@ -5046,14 +6028,14 @@ OsiClpSolverInterface::writeLp(FILE * fp,
   The default behavior of this is do nothing so only use where that would not matter
   e.g. strengthening a matrix for MIP
 */
-void 
+void
 OsiClpSolverInterface::replaceMatrixOptional(const CoinPackedMatrix & matrix)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(2|4|8));
   replaceMatrix(matrix);
 }
 // And if it does matter (not used at present)
-void 
+void
 OsiClpSolverInterface::replaceMatrix(const CoinPackedMatrix & matrix)
 {
   modelPtr_->whatsChanged_ &= (0xffff&~(2|4|8));
@@ -5068,14 +6050,14 @@ OsiClpSolverInterface::replaceMatrix(const CoinPackedMatrix & matrix)
     matrix2.setExtraMajor(0.0);
     matrix2.reverseOrderedCopyOf(matrix);
     modelPtr_->matrix_=new ClpPackedMatrix(matrix2);
-  }    
+  }
   modelPtr_->matrix_->setDimensions(modelPtr_->numberRows_,modelPtr_->numberColumns_);
   freeCachedResults();
 }
 // Get pointer to array[getNumCols()] of primal solution vector
-const double * 
-OsiClpSolverInterface::getColSolution() const 
-{ 
+const double *
+OsiClpSolverInterface::getColSolution() const
+{
   if (modelPtr_->solveType()!=2) {
     return modelPtr_->primalColumnSolution();
   } else {
@@ -5083,11 +6065,11 @@ OsiClpSolverInterface::getColSolution() const
     return modelPtr_->solutionRegion(1);
   }
 }
-  
+
 // Get pointer to array[getNumRows()] of dual prices
-const double * 
+const double *
 OsiClpSolverInterface::getRowPrice() const
-{ 
+{
   if (modelPtr_->solveType()!=2) {
     return modelPtr_->dualRowSolution();
   } else {
@@ -5096,11 +6078,11 @@ OsiClpSolverInterface::getRowPrice() const
     return modelPtr_->dualRowSolution();
   }
 }
-  
+
 // Get a pointer to array[getNumCols()] of reduced costs
-const double * 
-OsiClpSolverInterface::getReducedCost() const 
-{ 
+const double *
+OsiClpSolverInterface::getReducedCost() const
+{
   if (modelPtr_->solveType()!=2) {
     return modelPtr_->dualColumnSolution();
   } else {
@@ -5111,9 +6093,9 @@ OsiClpSolverInterface::getReducedCost() const
 
 /* Get pointer to array[getNumRows()] of row activity levels (constraint
    matrix times the solution vector */
-const double * 
-OsiClpSolverInterface::getRowActivity() const 
-{ 
+const double *
+OsiClpSolverInterface::getRowActivity() const
+{
   if (modelPtr_->solveType()!=2) {
     return modelPtr_->primalRowSolution();
   } else {
@@ -5121,8 +6103,8 @@ OsiClpSolverInterface::getRowActivity() const
     return modelPtr_->solutionRegion(0);
   }
 }
-double 
-OsiClpSolverInterface::getObjValue() const 
+double
+OsiClpSolverInterface::getObjValue() const
 {
   if (modelPtr_->numberIterations()||modelPtr_->upperIn_!=-COIN_DBL_MAX) {
     // This does not pass unitTest when getObjValue is called before solve.
@@ -5138,7 +6120,7 @@ OsiClpSolverInterface::getObjValue() const
 }
 
 /* Set an objective function coefficient */
-void 
+void
 OsiClpSolverInterface::setObjCoeff( int elementIndex, double elementValue )
 {
   modelPtr_->whatsChanged_ &= 0xffff;
@@ -5156,7 +6138,7 @@ OsiClpSolverInterface::setObjCoeff( int elementIndex, double elementValue )
 
 /* Set a single column lower bound<br>
    Use -DBL_MAX for -infinity. */
-void 
+void
 OsiClpSolverInterface::setColLower( int index, double elementValue )
 {
   modelPtr_->whatsChanged_ &= 0x1ffff;
@@ -5177,10 +6159,10 @@ OsiClpSolverInterface::setColLower( int index, double elementValue )
     modelPtr_->whatsChanged_ &= ~0xffff; // switch off
   modelPtr_->setColumnLower(index,elementValue);
 }
-      
+
 /* Set a single column upper bound<br>
    Use DBL_MAX for infinity. */
-void 
+void
 OsiClpSolverInterface::setColUpper( int index, double elementValue )
 {
   modelPtr_->whatsChanged_ &= 0x1ffff;
@@ -5203,7 +6185,7 @@ OsiClpSolverInterface::setColUpper( int index, double elementValue )
 }
 
 /* Set a single column lower and upper bound */
-void 
+void
 OsiClpSolverInterface::setColBounds( int elementIndex,
 				     double lower, double upper )
 {
@@ -5242,7 +6224,7 @@ void OsiClpSolverInterface::setColSetBounds(const int* indexFirst,
 //------------------------------------------------------------------
 /* Set a single row lower bound<br>
    Use -DBL_MAX for -infinity. */
-void 
+void
 OsiClpSolverInterface::setRowLower( int elementIndex, double elementValue ) {
   // Say can't gurantee optimal basis etc
   lastAlgorithm_=999;
@@ -5256,15 +6238,15 @@ OsiClpSolverInterface::setRowLower( int elementIndex, double elementValue ) {
   modelPtr_->setRowLower(elementIndex , elementValue);
   if (rowsense_!=NULL) {
     assert ((rhs_ != NULL) && (rowrange_ != NULL));
-    convertBoundToSense(modelPtr_->rowLower_[elementIndex], 
+    convertBoundToSense(modelPtr_->rowLower_[elementIndex],
 			modelPtr_->rowUpper_[elementIndex],
 			rowsense_[elementIndex], rhs_[elementIndex], rowrange_[elementIndex]);
   }
 }
-      
+
 /* Set a single row upper bound<br>
    Use DBL_MAX for infinity. */
-void 
+void
 OsiClpSolverInterface::setRowUpper( int elementIndex, double elementValue ) {
   modelPtr_->whatsChanged_ &= 0xffff;
   // Say can't guarantee optimal basis etc
@@ -5278,14 +6260,14 @@ OsiClpSolverInterface::setRowUpper( int elementIndex, double elementValue ) {
   modelPtr_->setRowUpper(elementIndex , elementValue);
   if (rowsense_!=NULL) {
     assert ((rhs_ != NULL) && (rowrange_ != NULL));
-    convertBoundToSense(modelPtr_->rowLower_[elementIndex], 
+    convertBoundToSense(modelPtr_->rowLower_[elementIndex],
 			modelPtr_->rowUpper_[elementIndex],
 			rowsense_[elementIndex], rhs_[elementIndex], rowrange_[elementIndex]);
   }
 }
-    
+
 /* Set a single row lower and upper bound */
-void 
+void
 OsiClpSolverInterface::setRowBounds( int elementIndex,
 	      double lower, double upper ) {
   modelPtr_->whatsChanged_ &= 0xffff;
@@ -5300,7 +6282,7 @@ OsiClpSolverInterface::setRowBounds( int elementIndex,
   modelPtr_->setRowBounds(elementIndex,lower,upper);
   if (rowsense_!=NULL) {
     assert ((rhs_ != NULL) && (rowrange_ != NULL));
-    convertBoundToSense(modelPtr_->rowLower_[elementIndex], 
+    convertBoundToSense(modelPtr_->rowLower_[elementIndex],
 			modelPtr_->rowUpper_[elementIndex],
 			rowsense_[elementIndex], rhs_[elementIndex], rowrange_[elementIndex]);
   }
@@ -5330,9 +6312,9 @@ OsiClpSolverInterface::setRowType(int i, char sense, double rightHandSide,
   }
 }
 // Set name of row
-void 
-//OsiClpSolverInterface::setRowName(int rowIndex, std::string & name) 
-OsiClpSolverInterface::setRowName(int rowIndex, std::string name) 
+void
+//OsiClpSolverInterface::setRowName(int rowIndex, std::string & name)
+OsiClpSolverInterface::setRowName(int rowIndex, std::string name)
 {
   if (rowIndex>=0&&rowIndex<modelPtr_->numberRows()) {
     int nameDiscipline;
@@ -5345,9 +6327,9 @@ OsiClpSolverInterface::setRowName(int rowIndex, std::string name)
 }
 // Return name of row if one exists or Rnnnnnnn
 // we ignore maxLen
-std::string 
+std::string
 OsiClpSolverInterface::getRowName(int rowIndex, unsigned int /*maxLen*/) const
-{ 
+{
   if (rowIndex == getNumRows())
     return getObjName();
   int useNames;
@@ -5357,11 +6339,11 @@ OsiClpSolverInterface::getRowName(int rowIndex, unsigned int /*maxLen*/) const
   else
     return dfltRowColName('r',rowIndex);
 }
-    
+
 // Set name of col
-void 
-//OsiClpSolverInterface::setColName(int colIndex, std::string & name) 
-OsiClpSolverInterface::setColName(int colIndex, std::string name) 
+void
+//OsiClpSolverInterface::setColName(int colIndex, std::string & name)
+OsiClpSolverInterface::setColName(int colIndex, std::string name)
 {
   if (colIndex>=0&&colIndex<modelPtr_->numberColumns()) {
     int nameDiscipline;
@@ -5373,7 +6355,7 @@ OsiClpSolverInterface::setColName(int colIndex, std::string name)
   }
 }
 // Return name of col if one exists or Rnnnnnnn
-std::string 
+std::string
 OsiClpSolverInterface::getColName(int colIndex, unsigned int /*maxLen*/) const
 {
   int useNames;
@@ -5383,8 +6365,8 @@ OsiClpSolverInterface::getColName(int colIndex, unsigned int /*maxLen*/) const
   else
     return dfltRowColName('c',colIndex);
 }
-    
-    
+
+
 //-----------------------------------------------------------------------------
 void OsiClpSolverInterface::setRowSetBounds(const int* indexFirst,
 					    const int* indexLast,
@@ -5496,7 +6478,7 @@ OsiClpSolverInterface::setRowSetTypes(const int* indexFirst,
   to ensure that all typical things (like reduced costs, etc.) are updated
   when individual pivots are executed and can be queried by other methods
 */
-void 
+void
 OsiClpSolverInterface::enableSimplexInterface(bool doingPrimal)
 {
   modelPtr_->whatsChanged_ &= 0xffff;
@@ -5519,7 +6501,7 @@ OsiClpSolverInterface::enableSimplexInterface(bool doingPrimal)
   ClpDualRowDantzig dantzig;
   modelPtr_->setDualRowPivotAlgorithm(dantzig);
   ClpPrimalColumnDantzig dantzigP;
-  dantzigP.saveWeights(modelPtr_,0); // set modelPtr 
+  dantzigP.saveWeights(modelPtr_,0); // set modelPtr
   modelPtr_->setPrimalColumnPivotAlgorithm(dantzigP);
   int saveOptions = modelPtr_->specialOptions_;
   modelPtr_->specialOptions_ &= ~262144;
@@ -5538,7 +6520,7 @@ OsiClpSolverInterface::enableSimplexInterface(bool doingPrimal)
 }
 
 //Undo whatever setting changes the above method had to make
-void 
+void
 OsiClpSolverInterface::disableSimplexInterface()
 {
   modelPtr_->whatsChanged_ &= 0xffff;
@@ -5567,7 +6549,7 @@ OsiClpSolverInterface::disableSimplexInterface()
   keeping with the spirit of the getBInv methods, special option 512 will
   leave all work to the client.
 */
-void 
+void
 OsiClpSolverInterface::enableFactorization() const
 {
   saveData_.specialOptions_=specialOptions_;
@@ -5604,7 +6586,7 @@ OsiClpSolverInterface::enableFactorization() const
   Undo enableFactorization. Retrieve the special options and scaling and
   remove the temporary objective used to fake minimisation in clp.
 */
-void 
+void
 OsiClpSolverInterface::disableFactorization() const
 {
   specialOptions_=saveData_.specialOptions_;
@@ -5636,10 +6618,10 @@ OsiClpSolverInterface::disableFactorization() const
    1. OsiWarmStartBasis resize operation is implemented
    more efficiently and
    2. It is ensured that effects on the solver are the same
-   
-   Returns a basis status of the structural/artificial variables 
+
+   Returns a basis status of the structural/artificial variables
 */
-void 
+void
 OsiClpSolverInterface::getBasisStatus(int* cstat, int* rstat) const
 {
   int iRow,iColumn;
@@ -5673,9 +6655,9 @@ OsiClpSolverInterface::getBasisStatus(int* cstat, int* rstat) const
   }
 }
 
-//Set the status of structural/artificial variables 
+//Set the status of structural/artificial variables
 //Returns 0 if OK, 1 if problem is bad e.g. duplicate elements, too large ...
-int 
+int
 OsiClpSolverInterface::setBasisStatus(const int* cstat, const int* rstat)
 {
   modelPtr_->whatsChanged_ &= 0xffff;
@@ -5789,26 +6771,53 @@ OsiClpSolverInterface::setBasisStatus(const int* cstat, const int* rstat)
   // May be bad model
   if (modelPtr_->status()==4)
     return 1;
-  // Save 
+  // Save
   basis_ = getBasis(modelPtr_);
   return 0;
 }
+// Set column status in ClpSimplex and warmStart
+void
+OsiClpSolverInterface::setColumnStatus(int iColumn, ClpSimplex::Status status)
+{
+  if (status!=modelPtr_->status_[iColumn]) {
+    modelPtr_->whatsChanged_ &= 0xffff;
+    // Say can't gurantee optimal basis etc
+    lastAlgorithm_=999;
+    modelPtr_->setColumnStatus(iColumn,status);
+    switch (status) {
+    case ClpSimplex::basic:
+      basis_.setStructStatus(iColumn,CoinWarmStartBasis::basic);
+      break;
+    case ClpSimplex::atUpperBound:
+      basis_.setStructStatus(iColumn,CoinWarmStartBasis::atUpperBound);
+      break;
+    case ClpSimplex::isFixed:
+    case ClpSimplex::atLowerBound:
+      basis_.setStructStatus(iColumn,CoinWarmStartBasis::atLowerBound);
+      break;
+    case ClpSimplex::superBasic:
+    case ClpSimplex::isFree:
+      basis_.setStructStatus(iColumn,CoinWarmStartBasis::isFree);
+      break;
+    }
+  }
+}
 
-/* Perform a pivot by substituting a colIn for colOut in the basis. 
+/* Perform a pivot by substituting a colIn for colOut in the basis.
    The status of the leaving variable is given in statOut. Where
    1 is to upper bound, -1 to lower bound
    Return code is 0 for okay,
    1 if inaccuracy forced re-factorization (should be okay) and
    -1 for singular factorization
 */
-int 
+int
 OsiClpSolverInterface::pivot(int colIn, int colOut, int outStatus)
 {
   assert (modelPtr_->solveType()==2);
   // convert to Clp style (what about flips?)
-  if (colIn<0) 
+  if (colIn<0)
     colIn = modelPtr_->numberColumns()+(-1-colIn);
-  if (colOut<0) 
+  if (colOut<0)
     colOut = modelPtr_->numberColumns()+(-1-colOut);
   // in clp direction of out is reversed
   outStatus = - outStatus;
@@ -5820,25 +6829,25 @@ OsiClpSolverInterface::pivot(int colIn, int colOut, int outStatus)
   return modelPtr_->pivot();
 }
 
-/* Obtain a result of the primal pivot 
+/* Obtain a result of the primal pivot
    Outputs: colOut -- leaving column, outStatus -- its status,
    t -- step size, and, if dx!=NULL, *dx -- primal ray direction.
    Inputs: colIn -- entering column, sign -- direction of its change (+/-1).
    Both for colIn and colOut, artificial variables are index by
    the negative of the row index minus 1.
-   Return code (for now): 0 -- leaving variable found, 
+   Return code (for now): 0 -- leaving variable found,
    -1 -- everything else?
-   Clearly, more informative set of return values is required 
+   Clearly, more informative set of return values is required
    Primal and dual solutions are updated
 */
-int 
-OsiClpSolverInterface::primalPivotResult(int colIn, int sign, 
-					 int& colOut, int& outStatus, 
+int
+OsiClpSolverInterface::primalPivotResult(int colIn, int sign,
+					 int& colOut, int& outStatus,
 					 double& t, CoinPackedVector* dx)
 {
   assert (modelPtr_->solveType()==2);
   // convert to Clp style
-  if (colIn<0) 
+  if (colIn<0)
     colIn = modelPtr_->numberColumns()+(-1-colIn);
   // set in clp
   modelPtr_->setDirectionIn(sign);
@@ -5857,7 +6866,7 @@ OsiClpSolverInterface::primalPivotResult(int colIn, int sign,
   }
   outStatus = - modelPtr_->directionOut();
   colOut = modelPtr_->sequenceOut();
-  if (colOut>= numberColumns) 
+  if (colOut>= numberColumns)
     colOut = -1-(colOut - numberColumns);
   return returnCode;
 }
@@ -5868,9 +6877,9 @@ OsiClpSolverInterface::primalPivotResult(int colIn, int sign,
    If dx!=NULL, then *dx contains dual ray
    Return code: same
 */
-int 
-OsiClpSolverInterface::dualPivotResult(int& /*colIn*/, int& /*sign*/, 
-				       int /*colOut*/, int /*outStatus*/, 
+int
+OsiClpSolverInterface::dualPivotResult(int& /*colIn*/, int& /*sign*/,
+				       int /*colOut*/, int /*outStatus*/,
 				       double& /*t*/, CoinPackedVector* /*dx*/)
 {
   assert (modelPtr_->solveType()==2);
@@ -5887,9 +6896,9 @@ OsiClpSolverInterface::dualPivotResult(int& /*colIn*/, int& /*sign*/,
   the way in and negate the duals on the way out. Since clp won't be doing
   anything more with c, we can exploit (-1)(-1) = 1 and do nothing.
 */
-void 
+void
 OsiClpSolverInterface::getReducedGradient(
-					  double* columnReducedCosts, 
+					  double* columnReducedCosts,
 					  double * duals,
 					  const double * c) const
 {
@@ -5955,7 +6964,7 @@ void OsiClpSolverInterface::setObjectiveAndRefresh(const double* c)
 #endif
 
 //Get a row of the tableau (slack part in slack if not NULL)
-void 
+void
 OsiClpSolverInterface::getBInvARow(int row, double* z, double * slack) const
 {
 #ifndef NDEBUG
@@ -5975,7 +6984,7 @@ OsiClpSolverInterface::getBInvARow(int row, double* z, double * slack) const
   columnArray1->clear();
   int numberRows = modelPtr_->numberRows();
   int numberColumns = modelPtr_->numberColumns();
-  // put +1 in row 
+  // put +1 in row
   // But swap if pivot variable was slack as clp stores slack as -1.0
   const int * pivotVariable = modelPtr_->pivotVariable();
   const double * rowScale = modelPtr_->rowScale();
@@ -6026,7 +7035,7 @@ OsiClpSolverInterface::getBInvARow(int row, double* z, double * slack) const
   columnArray1->clear();
 }
 //Get a row of the tableau (slack part in slack if not NULL)
-void 
+void
 OsiClpSolverInterface::getBInvARow(int row, CoinIndexedVector * columnArray0, CoinIndexedVector * slack,
 				   bool keepScaled) const
 {
@@ -6046,7 +7055,7 @@ OsiClpSolverInterface::getBInvARow(int row, CoinIndexedVector * columnArray0, Co
   columnArray1->clear();
   //int numberRows = modelPtr_->numberRows();
   int numberColumns = modelPtr_->numberColumns();
-  // put +1 in row 
+  // put +1 in row
   // But swap if pivot variable was slack as clp stores slack as -1.0
   const int * pivotVariable = modelPtr_->pivotVariable();
   const double * rowScale = modelPtr_->rowScale();
@@ -6099,7 +7108,7 @@ OsiClpSolverInterface::getBInvARow(int row, CoinIndexedVector * columnArray0, Co
 }
 
 //Get a row of the basis inverse
-void 
+void
 OsiClpSolverInterface::getBInvRow(int row, double* z) const
 
 {
@@ -6126,7 +7135,7 @@ OsiClpSolverInterface::getBInvRow(int row, double* z) const
   // but scale
   if (rowScale) {
     int pivot = pivotVariable[row];
-    if (pivot<numberColumns) 
+    if (pivot<numberColumns)
       value *= columnScale[pivot];
     else
       value /= rowScale[pivot-numberColumns];
@@ -6149,7 +7158,7 @@ OsiClpSolverInterface::getBInvRow(int row, double* z) const
 }
 
 //Get a column of the tableau
-void 
+void
 OsiClpSolverInterface::getBInvACol(int col, double* vec) const
 {
   //assert (modelPtr_->solveType()==2||(specialOptions_&1)!=0);
@@ -6216,7 +7225,7 @@ OsiClpSolverInterface::getBInvACol(int col, double* vec) const
   }
 }
 //Get a column of the tableau
-void 
+void
 OsiClpSolverInterface::getBInvACol(int col, CoinIndexedVector * rowArray1) const
 {
   CoinIndexedVector * rowArray0 = modelPtr_->rowArray(0);
@@ -6267,7 +7276,7 @@ OsiClpSolverInterface::getBInvACol(int col, CoinIndexedVector * rowArray1) const
     // need to know pivot variable for +1/-1 (slack) and row/column scaling
     int pivot = pivotVariable[k];
     if (pivot<numberColumns) {
-      if (columnScale) 
+      if (columnScale)
 	array[k] *= columnScale[pivot];
     } else {
       if (!rowScale) {
@@ -6280,7 +7289,7 @@ OsiClpSolverInterface::getBInvACol(int col, CoinIndexedVector * rowArray1) const
 }
 
 //Get an updated column
-void 
+void
 OsiClpSolverInterface::getBInvACol(CoinIndexedVector * rowArray1) const
 {
   CoinIndexedVector * rowArray0 = modelPtr_->rowArray(0);
@@ -6302,7 +7311,7 @@ OsiClpSolverInterface::getBInvACol(CoinIndexedVector * rowArray1) const
     // need to know pivot variable for +1/-1 (slack) and row/column scaling
     int pivot = pivotVariable[k];
     if (pivot<numberColumns) {
-      if (columnScale) 
+      if (columnScale)
 	array[k] *= columnScale[pivot];
     } else {
       if (!rowScale) {
@@ -6315,7 +7324,7 @@ OsiClpSolverInterface::getBInvACol(CoinIndexedVector * rowArray1) const
 }
 
 //Get a column of the basis inverse
-void 
+void
 OsiClpSolverInterface::getBInvCol(int col, double* vec) const
 {
   //assert (modelPtr_->solveType()==2||(specialOptions_&1)!=0);
@@ -6359,7 +7368,7 @@ OsiClpSolverInterface::getBInvCol(int col, double* vec) const
       for (int i=0;i<numberRows;i++) {
         int pivot = pivotVariable[i];
         double value = array[i];
-        if (pivot<numberColumns) 
+        if (pivot<numberColumns)
           vec[i] = value * columnScale[pivot];
         else
           vec[i] = - value / rowScale[pivot-numberColumns];
@@ -6373,7 +7382,7 @@ OsiClpSolverInterface::getBInvCol(int col, double* vec) const
    order of elements in a vector returned by getBInvACol() and
    getBInvCol()).
 */
-void 
+void
 OsiClpSolverInterface::getBasics(int* index) const
 {
   //assert (modelPtr_->solveType()==2||(specialOptions_&1)!=0);
@@ -6390,13 +7399,13 @@ OsiClpSolverInterface::getBasics(int* index) const
   }
 }
 //Returns true if a basis is available and optimal
-bool 
-OsiClpSolverInterface::basisIsAvailable() const 
+bool
+OsiClpSolverInterface::basisIsAvailable() const
 {
   return (lastAlgorithm_==1||lastAlgorithm_==2)&&(!modelPtr_->problemStatus_);
 }
 // Resets as if default constructor
-void 
+void
 OsiClpSolverInterface::reset()
 {
   setInitialData(); // clear base class
@@ -6426,7 +7435,7 @@ OsiClpSolverInterface::reset()
   fillParamMaps();
 }
 // Set a hint parameter
-bool 
+bool
 OsiClpSolverInterface::setHintParam(OsiHintParam key, bool yesNo,
                                     OsiHintStrength strength,
                                     void * otherInformation)
@@ -6439,7 +7448,7 @@ OsiClpSolverInterface::setHintParam(OsiHintParam key, bool yesNo,
         specialOptions_=0;
       }
       // set normal
-      specialOptions_ &= (2047|3*8192|15*65536|2097152|4194304);
+      specialOptions_ &= (2047|7*8192|15*65536|2097152|4194304);
       if (otherInformation!=NULL) {
         int * array = static_cast<int *> (otherInformation);
         if (array[0]>=0||array[0]<=2)
@@ -6457,7 +7466,7 @@ OsiClpSolverInterface::setHintParam(OsiHintParam key, bool yesNo,
 }
 
 // Crunch down model
-void 
+void
 OsiClpSolverInterface::crunch()
 {
   //if (modelPtr_->scalingFlag_>0&&!modelPtr_->rowScale_&&
@@ -6470,7 +7479,7 @@ OsiClpSolverInterface::crunch()
   bool abortSearch=false;
   // Use dual region
   double * rhs = modelPtr_->dualRowSolution();
-  // Get space for strong branching 
+  // Get space for strong branching
   int size = static_cast<int>((1+4*(numberRows+numberColumns))*sizeof(double));
   // and for save of original column bounds
   size += static_cast<int>(2*numberColumns*sizeof(double));
@@ -6505,7 +7514,7 @@ OsiClpSolverInterface::crunch()
   int * arrayI = whichColumn + 2*numberColumns;
   if (spareArrays_) {
     assert (smallModel_);
-    int nSame=0; 
+    int nSame=0;
     int nSub=0;
     for (int i=0;i<numberColumns;i++) {
       double lo = lowerOriginal[i];
@@ -6565,14 +7574,14 @@ OsiClpSolverInterface::crunch()
 #endif
   int nBound;
 #ifdef KEEP_SMALL
-  bool tightenBounds = ((specialOptions_&64)==0) ? false : true; 
+  bool tightenBounds = ((specialOptions_&64)==0) ? false : true;
   bool moreBounds=false;
   ClpSimplex * small=NULL;
   if (!smallModel_) {
 #ifndef NDEBUG
     CoinFillN(whichRow,3*numberRows+2*numberColumns,-1);
 #endif
-    small = static_cast<ClpSimplexOther *> 
+    small = static_cast<ClpSimplexOther *>
       (modelPtr_)->crunch(rhs,whichRow,whichColumn,
 			  nBound,moreBounds,tightenBounds);
 #ifndef NDEBUG
@@ -6582,7 +7591,7 @@ OsiClpSolverInterface::crunch()
 #endif
     smallModel_=small;
     spareArrays_ = spareArrays;
-  } else {  
+  } else {
     assert((modelPtr_->whatsChanged_&0x30000));
     //delete [] spareArrays_;
     //spareArrays_ = NULL;
@@ -6655,11 +7664,13 @@ OsiClpSolverInterface::crunch()
 #ifndef NDEBUG
   CoinFillN(whichRow,3*numberRows+2*numberColumns,-1);
 #endif
-  ClpSimplex * small = static_cast<ClpSimplexOther *> 
+  ClpSimplex * small = static_cast<ClpSimplexOther *>
     (modelPtr_)->crunch(rhs,whichRow,whichColumn,
 			nBound,moreBounds,tightenBounds);
 #endif
-  bool inCbcOrOther = (modelPtr_->specialOptions()&0x03000000)!=0;
+  int inCbcOrOther = ((modelPtr_->specialOptions()&0x03000000)!=0) ? 1 : 0;
+  if((modelPtr_->specialOptions()&0x01200000)==0x1200000)
+    inCbcOrOther=2;
   if (small) {
     small->specialOptions_ |= 262144;
     if ((specialOptions_&131072)!=0) {
@@ -6719,12 +7730,12 @@ OsiClpSolverInterface::crunch()
     int problemStatus = small->problemStatus();
     if (problemStatus>=0&&problemStatus<=2) {
       modelPtr_->setProblemStatus(problemStatus);
-      if (!inCbcOrOther||!problemStatus) {
+      if (inCbcOrOther!=1||!problemStatus) {
 	// Scaling may have changed - if so pass across
 	if (modelPtr_->scalingFlag()==4)
 	  modelPtr_->scaling(small->scalingFlag());
 	static_cast<ClpSimplexOther *> (modelPtr_)->afterCrunch(*small,whichRow,whichColumn,nBound);
-	if ((specialOptions_&1048576)==0) {
+	if ((specialOptions_&1048576)==0 && !inCbcOrOther) {
 	  // get correct rays
 	  if (problemStatus==2)
 	    modelPtr_->primal(1);
@@ -6739,9 +7750,43 @@ OsiClpSolverInterface::crunch()
 	    int numberRows2 = small->numberRows();
 	    double * ray = new double [numberRows];
 	    memset(ray,0,numberRows*sizeof(double));
+	    double multiplier=1.0;
+	    if (small->rowScale_) {
+	      if (small->sequenceOut_<small->numberColumns_)
+		multiplier=small->columnScale_[small->sequenceOut_];
+	      else
+		multiplier=small->rowScale_[small->sequenceOut_-small->numberColumns_];
+	    }
 	    for (int i = 0; i < numberRows2; i++) {
+	      small->ray_[i] *= multiplier;
 	      int iRow = whichRow[i];
 	      ray[iRow] = small->ray_[i];
+	    }
+	    {
+	      // Column copy of matrix
+	      const double * element = small->matrix()->getElements();
+	      const int * row = small->matrix()->getIndices();
+	      const CoinBigIndex * columnStart = small->matrix()->getVectorStarts();
+	      const int * columnLength = small->matrix()->getVectorLengths();
+	      int n=0,k=0,nn=0;
+	      for (int i=0;i<small->numberColumns_;i++) {
+		double sum = 0.0;
+		for (CoinBigIndex j = columnStart[i];
+		     j < columnStart[i] + columnLength[i]; j++) {
+		  sum += small->ray_[row[j]]*element[j];
+		}
+		if (fabs(sum)>1.0e-7) {
+		  if (small->getColumnStatus(i) == ClpSimplex::basic) {
+		    n++;
+		    if (fabs(1.0-fabs(sum))>1.0e-7)
+		      nn++;
+		  } else if (fabs(sum)>1.0e-7) {
+		    k++;
+		  }
+		  //printf("%d %g\n",i,sum);
+		}
+	      }
+	      //printf("small %d basic (%d non-unit) %d non-basic\n",n,nn,k);
 	    }
 	    // Column copy of matrix
 	    const double * element = getMatrixByCol()->getElements();
@@ -6749,9 +7794,6 @@ OsiClpSolverInterface::crunch()
 	    const CoinBigIndex * columnStart = getMatrixByCol()->getVectorStarts();
 	    const int * columnLength = getMatrixByCol()->getVectorLengths();
 	    // translate
-	    //pivotRow=whichRow[pivotRow];
-	    //modelPtr_->spareIntArray_[3]=pivotRow;
-	    int pivotRow=-1;
 	    for (int jRow = nBound; jRow < 2 * numberRows; jRow++) {
 	      int iRow = whichRow[jRow];
 	      int iColumn = whichRow[jRow+numberRows];
@@ -6766,22 +7808,36 @@ OsiClpSolverInterface::crunch()
 		    sum += ray[row[j]]*element[j];
 		  }
 		}
-		if (iRow!=pivotRow) {
-		  ray[iRow] = -sum / value;
-		} else {
-		  printf("what now - direction %d wanted %g sum %g value %g\n",
-			 small->directionOut_,ray[iRow],
-			 sum,value);
-		}
+		ray[iRow] = -sum / value;
 	      }
 	    }
+	    int n=0,k=0,nn=0;
 	    for (int i=0;i<modelPtr_->numberColumns_;i++) {
+	      double sum = 0.0;
+	      for (CoinBigIndex j = columnStart[i];
+		   j < columnStart[i] + columnLength[i]; j++) {
+		sum += ray[row[j]]*element[j];
+	      }
+	      if (modelPtr_->getStatus(i)==ClpSimplex::basic&&
+		  fabs(sum)>1.0e-7) {
+		n++;
+		if (fabs(1.0-fabs(sum))>1.0e-7)
+		  nn++;
+	      } else if (fabs(sum)>1.0e-7) {
+		k++;
+	      }
 	      if (modelPtr_->getStatus(i)!=ClpSimplex::basic&&
 		  modelPtr_->columnLower_[i]==modelPtr_->columnUpper_[i])
 		modelPtr_->setStatus(i,ClpSimplex::isFixed);
 	    }
+	    //printf("%d basic (%d non-unit) %d non-basic\n",n,nn,k);
 	    modelPtr_->ray_=ray;
 	    modelPtr_->directionOut_=small->directionOut_;
+	    if (small->sequenceOut_<small->numberColumns_)
+	      modelPtr_->sequenceOut_ = whichColumn[small->sequenceOut_];
+	    else
+	      modelPtr_->sequenceOut_ = whichRow[small->sequenceOut_-small->numberColumns_]
+		+ modelPtr_->numberColumns_;
 	  }
 	}
       }
@@ -6811,7 +7867,7 @@ OsiClpSolverInterface::crunch()
 	// may be problems
 	if (inCbcOrOther&&disasterHandler_->inTrouble()) {
 	  if (disasterHandler_->typeOfDisaster()) {
-	    // We want to abort 
+	    // We want to abort
 	    abortSearch=true;
 	    goto disaster;
 	  }
@@ -6824,7 +7880,7 @@ OsiClpSolverInterface::crunch()
 	  totalIterations += small->numberIterations();
 	  if (disasterHandler_->inTrouble()) {
 	    if (disasterHandler_->typeOfDisaster()) {
-	      // We want to abort 
+	      // We want to abort
 	      abortSearch=true;
 	      goto disaster;
 	    }
@@ -6839,7 +7895,7 @@ OsiClpSolverInterface::crunch()
 	      printf("disaster crunch - treat as infeasible\n");
 #endif
 	      if (disasterHandler_->typeOfDisaster()) {
-		// We want to abort 
+		// We want to abort
 		abortSearch=true;
 		goto disaster;
 	      }
@@ -6888,9 +7944,9 @@ OsiClpSolverInterface::crunch()
   delete [] whichRow;
 #endif
 }
-// Synchronize model 
-void 
-OsiClpSolverInterface::synchronizeModel() 
+// Synchronize model
+void
+OsiClpSolverInterface::synchronizeModel()
 {
   if ((specialOptions_ &128)!=0) {
     if (!modelPtr_->rowScale_&&(specialOptions_&131072)!=0) {
@@ -6916,7 +7972,7 @@ OsiClpSolverInterface::canDoSimplexInterface() const
   return 2;
 }
 // Pass in sos stuff from AMPl
-void 
+void
 OsiClpSolverInterface::setSOSData(int numberSOS,const char * type,
 				  const int * start,const int * indices, const double * weights)
 {
@@ -6933,7 +7989,7 @@ OsiClpSolverInterface::setSOSData(int numberSOS,const char * type,
   }
 }
 /* Identify integer variables and SOS and create corresponding objects.
-  
+
       Record integer variables and create an OsiSimpleInteger object for each
       one.  All existing OsiSimpleInteger objects will be destroyed.
       If the solver supports SOS then do the same for SOS.
@@ -6941,7 +7997,7 @@ OsiClpSolverInterface::setSOSData(int numberSOS,const char * type,
       If justCount then no objects created and we just store numberIntegers_
       Returns number of SOS
 */
-int 
+int
 OsiClpSolverInterface::findIntegersAndSOS(bool justCount)
 {
   findIntegers(justCount);
@@ -6952,7 +8008,7 @@ OsiClpSolverInterface::findIntegersAndSOS(bool justCount)
   for (iObject = 0;iObject<numberObjects_;iObject++) {
     OsiSOS * obj =
       dynamic_cast <OsiSOS *>(oldObject[iObject]) ;
-    if (obj) 
+    if (obj)
       numberSOS++;
   }
   if (numberSOS_&&!numberSOS) {
@@ -6967,7 +8023,7 @@ OsiClpSolverInterface::findIntegersAndSOS(bool justCount)
     CoinMemcpyN(oldObject,nObjects,object_);
     // Delete old array (just array)
     delete [] oldObject;
-    
+
     for (int i=0;i<numberSOS_;i++) {
       CoinSet * set =  setInfo_+i;
       object_[nObjects++] =
@@ -6981,7 +8037,7 @@ OsiClpSolverInterface::findIntegersAndSOS(bool justCount)
     for (iObject = 0;iObject<numberObjects_;iObject++) {
       OsiSOS * obj =
 	dynamic_cast <OsiSOS *>(oldObject[iObject]) ;
-      if (obj) 
+      if (obj)
 	setInfo_[numberSOS_++]=CoinSosSet(obj->numberMembers(),obj->members(),obj->weights(),obj->sosType());
     }
   } else if (numberSOS!=numberSOS_) {
@@ -6996,10 +8052,10 @@ OsiClpSolverInterface::findIntegersAndSOS(bool justCount)
 // Trivial class for Branch and Bound
 
 class OsiNodeSimple  {
-  
+
 public:
-    
-  // Default Constructor 
+
+  // Default Constructor
   OsiNodeSimple ();
 
   // Constructor from current state (and list of integers)
@@ -7010,13 +8066,13 @@ public:
   void gutsOfConstructor (OsiSolverInterface &model,
                  int numberIntegers, int * integer,
                  CoinWarmStart * basis);
-  // Copy constructor 
+  // Copy constructor
   OsiNodeSimple ( const OsiNodeSimple &);
-   
-  // Assignment operator 
+
+  // Assignment operator
   OsiNodeSimple & operator=( const OsiNodeSimple& rhs);
 
-  // Destructor 
+  // Destructor
   ~OsiNodeSimple ();
   // Work of destructor
   void gutsOfDestructor();
@@ -7031,7 +8087,7 @@ public:
   CoinWarmStart * basis_;
   // Objective value (COIN_DBL_MAX) if spare node
   double objectiveValue_;
-  // Branching variable (0 is first integer) 
+  // Branching variable (0 is first integer)
   int variable_;
   // Way to branch - -1 down (first), 1 up, -2 down (second), 2 up (second)
   int way_;
@@ -7041,7 +8097,7 @@ public:
   double value_;
   // Number of descendant nodes (so 2 is in interior)
   int descendants_;
-  // Parent 
+  // Parent
   int parent_;
   // Previous in chain
   int previous_;
@@ -7153,7 +8209,7 @@ OsiNodeSimple::gutsOfConstructor(OsiSolverInterface & model,
   }
   int numberStrong=0;
   for (i=0;i<STRONG_BRANCHING;i++) {
-    if (chosen[i]>=0) { 
+    if (chosen[i]>=0) {
       numberStrong ++;
       variable_ = chosen[i];
     }
@@ -7333,7 +8389,7 @@ OsiNodeSimple::gutsOfConstructor(OsiSolverInterface & model,
 #endif
 }
 
-OsiNodeSimple::OsiNodeSimple(const OsiNodeSimple & rhs) 
+OsiNodeSimple::OsiNodeSimple(const OsiNodeSimple & rhs)
 {
   if (rhs.basis_)
     basis_=rhs.basis_->clone();
@@ -7392,7 +8448,7 @@ OsiNodeSimple::~OsiNodeSimple ()
   gutsOfDestructor();
 }
 // Work of destructor
-void 
+void
 OsiNodeSimple::gutsOfDestructor()
 {
   delete [] lower_;
@@ -7404,7 +8460,7 @@ OsiNodeSimple::gutsOfDestructor()
   objectiveValue_ = COIN_DBL_MAX;
 }
 // Extension - true if other extension of this
-bool 
+bool
 OsiNodeSimple::extension(const OsiNodeSimple & other,
 			 const double * originalLower,
 			 const double * originalUpper) const
@@ -7427,24 +8483,24 @@ OsiNodeSimple::extension(const OsiNodeSimple & other,
 #define FUNNY_BRANCHING 1
 #define FUNNY_TREE
 #ifndef FUNNY_TREE
-// Vector of OsiNodeSimples 
+// Vector of OsiNodeSimples
 typedef std::vector<OsiNodeSimple>    OsiVectorNode;
 #else
 // Must code up by hand
 class OsiVectorNode  {
-  
+
 public:
-    
-  // Default Constructor 
+
+  // Default Constructor
   OsiVectorNode ();
 
-  // Copy constructor 
+  // Copy constructor
   OsiVectorNode ( const OsiVectorNode &);
-   
-  // Assignment operator 
+
+  // Assignment operator
   OsiVectorNode & operator=( const OsiVectorNode& rhs);
 
-  // Destructor 
+  // Destructor
   ~OsiVectorNode ();
   // Size
   inline int size() const
@@ -7457,7 +8513,7 @@ public:
   void pop_back();
   // Works out best one
   int best() const;
-  
+
   // Public data
   // Maximum size
   int maximumSize_;
@@ -7467,9 +8523,9 @@ public:
   int sizeDeferred_;
   // First spare
   int firstSpare_;
-  // First 
+  // First
   int first_;
-  // Last 
+  // Last
   int last_;
   // Chosen one
   mutable int chosen_;
@@ -7493,8 +8549,8 @@ OsiVectorNode::OsiVectorNode() :
   }
 }
 
-OsiVectorNode::OsiVectorNode(const OsiVectorNode & rhs) 
-{  
+OsiVectorNode::OsiVectorNode(const OsiVectorNode & rhs)
+{
   maximumSize_ = rhs.maximumSize_;
   size_ = rhs.size_;
   sizeDeferred_ = rhs.sizeDeferred_;
@@ -7532,7 +8588,7 @@ OsiVectorNode::~OsiVectorNode ()
   delete [] nodes_;
 }
 // Push
-void 
+void
 OsiVectorNode::push_back(const OsiNodeSimple & node)
 {
   if (size_==maximumSize_) {
@@ -7582,7 +8638,7 @@ OsiVectorNode::push_back(const OsiNodeSimple & node)
     sizeDeferred_++;
 }
 // Works out best one
-int 
+int
 OsiVectorNode::best() const
 {
   // can modify
@@ -7599,14 +8655,14 @@ OsiVectorNode::best() const
   return chosen_;
 }
 // Last one in (or other criterion)
-OsiNodeSimple 
+OsiNodeSimple
 OsiVectorNode::back() const
 {
   assert (last_>=0);
   return nodes_[best()];
 }
 // Get rid of last one
-void 
+void
 OsiVectorNode::pop_back()
 {
   // Temporary until more sophisticated
@@ -7639,7 +8695,7 @@ OsiVectorNode::pop_back()
 }
 #endif
 // Invoke solver's built-in enumeration algorithm
-void 
+void
 OsiClpSolverInterface::branchAndBound() {
   double time1 = CoinCpuTime();
   // solve LP
@@ -7686,7 +8742,7 @@ OsiClpSolverInterface::branchAndBound() {
     double direction = getObjSense();
     // empty tree
     OsiVectorNode branchingTree;
-    
+
     // Add continuous to it;
     OsiNodeSimple rootNode(*this,numberIntegers,which,getWarmStart());
     // something extra may have been fixed by strong branching
@@ -7699,7 +8755,7 @@ OsiClpSolverInterface::branchAndBound() {
       // push on stack
       branchingTree.push_back(rootNode);
     }
-    
+
     // For printing totals
     int numberIterations=0;
     int numberNodes =0;
@@ -7730,7 +8786,7 @@ OsiClpSolverInterface::branchAndBound() {
         if (node.way_<0) {
           setColUpper(which[node.variable_],floor(node.value_));
           // now push back node if more to come
-          if (node.way_==-1) { 
+          if (node.way_==-1) {
             node.way_=+2;	  // Swap direction
             branchingTree.push_back(node);
           } else if (funnyBranching) {
@@ -7740,7 +8796,7 @@ OsiClpSolverInterface::branchAndBound() {
         } else {
           setColLower(which[node.variable_],ceil(node.value_));
           // now push back node if more to come
-          if (node.way_==1) { 
+          if (node.way_==1) {
             node.way_=-2;	  // Swap direction
             branchingTree.push_back(node);
           } else if (funnyBranching) {
@@ -7818,7 +8874,7 @@ OsiClpSolverInterface::branchAndBound() {
 	      }
 	    }
 	    // See if can do anything
-	    {
+	    if (1) {
 	      /*
 		If kNode is on second branch then
 		a) If other feasible could free up as well
@@ -7837,7 +8893,7 @@ OsiClpSolverInterface::branchAndBound() {
 		  double djValue = dj[iColumn]*direction;
 		  assert (node.way_==2||node.way_==-2);
 		  // we don't know which branch it was - look at current bounds
-		  if (upper[iColumn]<value&&node.lower_[variable]<upper[iColumn]) {
+		  if (upper[iColumn]<value&&node.upper_[variable]>upper[iColumn]) {
 		    // must have been down branch
 		    if (djValue>1.0e-3||solution[iColumn]<upper[iColumn]-1.0e-5) {
 		      if (canDelete) {
@@ -7896,9 +8952,9 @@ OsiClpSolverInterface::branchAndBound() {
 			}
 		      }
 		      break;
-		    } 
+		    }
 		    // we don't know which branch it was - look at current bounds
-		  } else if (lower[iColumn]>value&&node.upper_[variable]>lower[iColumn]) {
+		  } else if (lower[iColumn]>value&&node.lower_[variable]<lower[iColumn]) {
 		    // must have been up branch
 		    if (djValue<-1.0e-3||solution[iColumn]>lower[iColumn]+1.0e-5) {
 		      if (canDelete) {
@@ -7957,7 +9013,7 @@ OsiClpSolverInterface::branchAndBound() {
 			}
 		      }
 		      break;
-		    } 
+		    }
 		  }
 		} else {
 		  break;
@@ -7968,11 +9024,12 @@ OsiClpSolverInterface::branchAndBound() {
 	    // solve
 	    //resolve();
 	    //assert(!getIterationCount());
-	    if ((numberNodes%1000)==0) 
-	      printf("%d nodes, redundant down %d (%d) up %d (%d) tree size %d\n",
-		     numberNodes,nRedundantDown,nRedundantDown2,nRedundantUp,nRedundantUp2,branchingTree.size());
+	    if ((numberNodes%1000)==0)
+	      printf("%d nodes, redundant down %d (%d) up %d (%d) tree size %d best solution %g\n",
+		     numberNodes,nRedundantDown,nRedundantDown2,nRedundantUp,nRedundantUp2,
+		     branchingTree.size(),bestNode.objectiveValue_);
 #else
-	    if ((numberNodes%1000)==0) 
+	    if ((numberNodes%1000)==0)
 	      printf("%d nodes, tree size %d\n",
 		     numberNodes,branchingTree.size());
 #endif
@@ -7988,7 +9045,7 @@ OsiClpSolverInterface::branchAndBound() {
 	      newNode = OsiNodeSimple(*this,numberIntegers,which,getWarmStart());
 	    }
 	    if (newNode.objectiveValue_<1.0e100) {
-	      if (newNode.variable_>=0) 
+	      if (newNode.variable_>=0)
 		assert (fabs(newNode.value_-floor(newNode.value_+0.5))>1.0e-6);
 	      newNode.parent_ = kNode;
 	      // push on stack
@@ -7996,6 +9053,7 @@ OsiClpSolverInterface::branchAndBound() {
 	    }
 	  } else {
 	    // infeasible
+	    // could use conflict cut code to find redundant
 	    delete ws;
  	  }
         } else {
@@ -8049,14 +9107,17 @@ OsiClpSolverInterface::branchAndBound() {
     //"branchAndBound", "OsiClpSolverInterface");
   }
 }
-void 
+void
 OsiClpSolverInterface::setSpecialOptions(unsigned int value)
-{ 
+{
+#ifdef NO_CRUNCH2
+  value &= ~1;
+#endif
   if ((value&131072)!=0&&(specialOptions_&131072)==0) {
     // Try and keep scaling factors around
     delete baseModel_;
     baseModel_ = new ClpSimplex(*modelPtr_);
-    ClpPackedMatrix * clpMatrix = 
+    ClpPackedMatrix * clpMatrix =
       dynamic_cast< ClpPackedMatrix*>(baseModel_->matrix_);
     if (!clpMatrix||clpMatrix->scale(baseModel_)) {
       // switch off again
@@ -8093,24 +9154,24 @@ OsiClpSolverInterface::setSpecialOptions(unsigned int value)
   specialOptions_=value;
   if ((specialOptions_&0x80000000)!=0) {
     // unset top bit if anything set
-    if (specialOptions_!=0x80000000) 
+    if (specialOptions_!=0x80000000)
       specialOptions_ &= 0x7fffffff;
   }
 }
-void 
+void
 OsiClpSolverInterface::setSpecialOptionsMutable(unsigned int value) const
-{ 
+{
   specialOptions_=value;
   if ((specialOptions_&0x80000000)!=0) {
     // unset top bit if anything set
-    if (specialOptions_!=0x80000000) 
+    if (specialOptions_!=0x80000000)
       specialOptions_ &= 0x7fffffff;
   }
 }
 /*  If solver wants it can save a copy of "base" (continuous) model here
  */
-void 
-OsiClpSolverInterface::saveBaseModel() 
+void
+OsiClpSolverInterface::saveBaseModel()
 {
   delete continuousModel_;
   continuousModel_ = new ClpSimplex(*modelPtr_);
@@ -8122,11 +9183,11 @@ OsiClpSolverInterface::saveBaseModel()
   //continuousModel_->createRim(63);
 }
 // Pass in disaster handler
-void 
+void
 OsiClpSolverInterface::passInDisasterHandler(OsiClpDisasterHandler * handler)
 {
   delete disasterHandler_;
-  if ( handler  ) 
+  if ( handler  )
     disasterHandler_ = dynamic_cast<OsiClpDisasterHandler *>(handler->clone());
   else
     disasterHandler_ = NULL;
@@ -8134,7 +9195,7 @@ OsiClpSolverInterface::passInDisasterHandler(OsiClpDisasterHandler * handler)
 /*  Strip off rows to get to this number of rows.
     If solver wants it can restore a copy of "base" (continuous) model here
 */
-void 
+void
 OsiClpSolverInterface::restoreBaseModel(int numberRows)
 {
   if (continuousModel_&&continuousModel_->numberRows()==numberRows) {
@@ -8167,9 +9228,12 @@ OsiClpSolverInterface::restoreBaseModel(int numberRows)
   }
 }
 // Tighten bounds - lightweight
-int 
+int
 OsiClpSolverInterface::tightenBounds(int lightweight)
 {
+#if FUNNY_BRANCHING3>100
+  return 0;
+#endif
   if (!integerInformation_||(specialOptions_&262144)!=0)
     return 0; // no integers
   //CoinPackedMatrix matrixByRow(*getMatrixByRow());
@@ -8222,7 +9286,7 @@ OsiClpSolverInterface::tightenBounds(int lightweight)
 	  int n=first[iRow];
 	  if (n==0&&element[j])
 	    first[iRow]=-iColumn-1;
-	  else if (n<0) 
+	  else if (n<0)
 	    first[iRow]=2;
 	}
       }
@@ -8267,11 +9331,11 @@ OsiClpSolverInterface::tightenBounds(int lightweight)
 	  }
 	  double tolerance2 = 1.0e-6+1.0e-8*sum[iRow];
 	  if (integerInformation&&integerInformation[iColumn]) {
-	    if (newLower-floor(newLower)<tolerance2) 
+	    if (newLower-floor(newLower)<tolerance2)
 	      newLower=floor(newLower);
 	    else
 	      newLower=ceil(newLower);
-	    if (ceil(newUpper)-newUpper<tolerance2) 
+	    if (ceil(newUpper)-newUpper<tolerance2)
 	      newUpper=ceil(newUpper);
 	    else
 	      newUpper=floor(newUpper);
@@ -8541,7 +9605,7 @@ OsiClpSolverInterface::tightenBounds(int lightweight)
 	      setColLower(iColumn,upper);
 	    }
 	  }
-	}	    
+	}
       }
     } else {
       // just do dual tests
@@ -8767,24 +9831,190 @@ OsiClpSolverInterface::tightenBounds(int lightweight)
   delete [] sum;
   return nTightened;
 }
+// See if any integer variables make infeasible other way
+int
+OsiClpSolverInterface::infeasibleOtherWay(char * whichWay)
+{
+  //CoinPackedMatrix matrixByRow(*getMatrixByRow());
+  int numberRows = getNumRows();
+  int numberColumns = getNumCols();
+
+  int iColumn;
+
+  // Row copy
+  //const double * elementByRow = matrixByRow.getElements();
+  //const int * column = matrixByRow.getIndices();
+  //const CoinBigIndex * rowStart = matrixByRow.getVectorStarts();
+  //const int * rowLength = matrixByRow.getVectorLengths();
+
+  const double * columnUpper = getColUpper();
+  const double * columnLower = getColLower();
+  const double * rowUpper = getRowUpper();
+  const double * rowLower = getRowLower();
+
+  // Column copy of matrix
+  const double * element = getMatrixByCol()->getElements();
+  const int * row = getMatrixByCol()->getIndices();
+  const CoinBigIndex * columnStart = getMatrixByCol()->getVectorStarts();
+  const int * columnLength = getMatrixByCol()->getVectorLengths();
+
+  double tolerance = 1.0e-6;
+  double * down = new double [3*numberRows];
+  double * up = down + numberRows;
+  double * sum = up + numberRows;
+  int * nLowerInf = new int [2*numberRows];
+  int * nUpperInf = nLowerInf + numberRows;
+  CoinZeroN(down,numberRows);
+  CoinZeroN(up,numberRows);
+  CoinZeroN(sum,numberRows);
+  for (int i=0;i<numberRows;i++) {
+    nLowerInf[i]=-1;
+    nUpperInf[i]=-1;
+  }
+  double infinity = getInfinity();
+  for (iColumn=0;iColumn<numberColumns;iColumn++) {
+    CoinBigIndex start = columnStart[iColumn];
+    CoinBigIndex end = start + columnLength[iColumn];
+    double lower = columnLower[iColumn];
+    double upper = columnUpper[iColumn];
+    if (lower==upper) {
+      for (CoinBigIndex j=start;j<end;j++) {
+	int iRow = row[j];
+	double value = element[j];
+	down[iRow] += value*lower;
+	up[iRow] += value*lower;
+	sum[iRow] += 2.0*fabs(value*lower);
+      }
+    } else {
+      for (CoinBigIndex j=start;j<end;j++) {
+	int iRow = row[j];
+	double value = element[j];
+	if (value>0.0) {
+	  if (lower!=-infinity) {
+	    down[iRow] += value*lower;
+	    sum[iRow]+=fabs(value*lower);
+	  } else if (nLowerInf[iRow]==-1) {
+	    nLowerInf[iRow]=iColumn;
+	  } else {
+	    nLowerInf[iRow]=-2;
+	  }
+	  if (upper!=infinity) {
+	    up[iRow] += value*upper;
+	    sum[iRow]+=fabs(value*upper);
+	  } else if (nUpperInf[iRow]==-1) {
+	    nUpperInf[iRow]=iColumn;
+	  } else {
+	    nUpperInf[iRow]=-2;
+	  }
+	} else {
+	  if (upper!=infinity) {
+	    down[iRow] += value*upper;
+	    sum[iRow]+=fabs(value*upper);
+	  } else if (nLowerInf[iRow]==-1) {
+	    nLowerInf[iRow]=iColumn;
+	  } else {
+	    nLowerInf[iRow]=-2;
+	  }
+	  if (lower!=-infinity) {
+	    up[iRow] += value*lower;
+	    sum[iRow]+=fabs(value*lower);
+	  } else if (nUpperInf[iRow]==-1) {
+	    nUpperInf[iRow]=iColumn;
+	  } else {
+	    nUpperInf[iRow]=-2;
+	  }
+	}
+      }
+    }
+  }
+  int nOtherWay=0;
+  for (iColumn=0;iColumn<numberColumns;iColumn++) {
+    char upDown = whichWay[iColumn];
+    if (!upDown)
+      continue;
+    // take off contribution of column
+    double lower = columnLower[iColumn];
+    double upper = columnUpper[iColumn];
+    double newLower;
+    double newUpper;
+    if (upDown==1) {
+      newLower=-infinity;
+      newUpper=lower -1.0;
+    } else {
+      newLower=upper+1.0;
+      newUpper=infinity;
+    }
+    CoinBigIndex start = columnStart[iColumn];
+    CoinBigIndex end = start + columnLength[iColumn];
+    if (lower<-1.0e8&&upper>1.0e8)
+      continue; // Could do severe damage to accuracy
+    for (CoinBigIndex j=start;j<end;j++) {
+      int iRow = row[j];
+      double value = element[j];
+      double thisDown = down[iRow];
+      double thisUp = up[iRow];
+      if (value>0.0) {
+	if (nLowerInf[iRow]==-1)
+	  thisDown -= value*lower;
+	else if (nLowerInf[iRow]==-2||
+		 (nLowerInf[iRow]!=iColumn))
+	  thisDown = -infinity;
+	if (nUpperInf[iRow]==-1)
+	  thisUp -= value*upper;
+	else if (nUpperInf[iRow]==-2||
+		 (nUpperInf[iRow]!=iColumn))
+	  thisUp = infinity;
+	thisDown += newLower*value;
+	thisUp += newUpper*value;
+      } else {
+	if (nLowerInf[iRow]==-1)
+	  thisUp -= value*lower;
+	else if (nLowerInf[iRow]==-2||
+		 (nLowerInf[iRow]!=iColumn))
+	  thisUp = infinity;
+	if (nUpperInf[iRow]==-1)
+	  thisDown -= value*upper;
+	else if (nUpperInf[iRow]==-2||
+		 (nUpperInf[iRow]!=iColumn))
+	  thisDown = -infinity;
+	thisDown += newUpper*value;
+	thisUp += newLower*value;
+      }
+      if (thisDown>rowUpper[iRow]) {
+	if (thisDown>rowUpper[iRow]+tolerance+1.0e-8*sum[iRow]) {
+	  nOtherWay++;
+	  whichWay[iColumn] *=2;
+	}
+      } else if (thisUp<rowLower[iRow]) {
+	if (thisUp<rowUpper[iRow]-tolerance-1.0e-8*sum[iRow]) {
+	  nOtherWay++;
+	  whichWay[iColumn] *=2;
+	}
+      }
+    }
+  }
+  delete [] nLowerInf;
+  delete [] down;
+  return nOtherWay;
+}
 // Return number of entries in L part of current factorization
-CoinBigIndex 
+CoinBigIndex
 OsiClpSolverInterface::getSizeL() const
 {
   return modelPtr_->factorization_->numberElementsL();
 }
 // Return number of entries in U part of current factorization
-CoinBigIndex 
+CoinBigIndex
 OsiClpSolverInterface::getSizeU() const
 {
   return modelPtr_->factorization_->numberElementsU();
 }
 /* Add a named row (constraint) to the problem.
  */
-void 
+void
 OsiClpSolverInterface::addRow(const CoinPackedVectorBase& vec,
-       const char rowsen, const double rowrhs,   
-       const double rowrng, std::string name) 
+       const char rowsen, const double rowrhs,
+       const double rowrng, std::string name)
 {
   int ndx = getNumRows() ;
   addRow(vec,rowsen,rowrhs,rowrng) ;
@@ -8792,11 +10022,11 @@ OsiClpSolverInterface::addRow(const CoinPackedVectorBase& vec,
 }
 /* Add a named column (primal variable) to the problem.
  */
-void 
+void
 OsiClpSolverInterface::addCol(int numberElements,
        const int* rows, const double* elements,
-       const double collb, const double colub,   
-       const double obj, std::string name) 
+       const double collb, const double colub,
+       const double obj, std::string name)
 {
   int ndx = getNumCols() ;
   addCol(numberElements,rows,elements,collb,colub,obj) ;
@@ -8810,7 +10040,7 @@ OsiClpSolverInterface::addCol(int numberElements,
    Above only done if feasible
    When set resolve does less work
 */
-int 
+int
 OsiClpSolverInterface::startFastDual(int options)
 {
   stuff_.zap(3);
@@ -8825,13 +10055,13 @@ OsiClpSolverInterface::setStuff(double tolerance,double increment)
   stuff_.integerIncrement_ = increment;
 }
 // Stops faster dual
-void 
+void
 OsiClpSolverInterface::stopFastDual()
 {
   modelPtr_->stopFastDual2(&stuff_);
 }
 // Compute largest amount any at continuous away from bound
-void 
+void
 OsiClpSolverInterface::computeLargestAway()
 {
   // get largest scaled away from bound
@@ -8874,7 +10104,7 @@ OsiClpSolverInterface::computeLargestAway()
       largestScaled = CoinMax(largestScaled,below);
     }
   }
-  
+
   int numberColumns = temp.numberColumns();
   const double * columnPrimal = temp.primalColumnSolution();
   const double * columnLower = temp.columnLower();
@@ -8913,7 +10143,7 @@ OsiClpSolverInterface::computeLargestAway()
     modelPtr_->setSpecialOptions(modelPtr_->specialOptions()&~(2048+4096));
 }
 // Pass in Message handler (not deleted at end)
-void 
+void
 OsiClpSolverInterface::passInMessageHandler(CoinMessageHandler * handler)
 {
   if (defaultHandler_) {
@@ -8926,7 +10156,7 @@ OsiClpSolverInterface::passInMessageHandler(CoinMessageHandler * handler)
     modelPtr_->passInMessageHandler(handler);
 }
 // Set log level (will also set underlying solver's log level)
-void 
+void
 OsiClpSolverInterface::setLogLevel(int value)
 {
   handler_->setLogLevel(value);
@@ -8934,14 +10164,14 @@ OsiClpSolverInterface::setLogLevel(int value)
     modelPtr_->setLogLevel(value);
 }
 // Set fake objective (and take ownership)
-void 
+void
 OsiClpSolverInterface::setFakeObjective(ClpLinearObjective * fakeObjective)
 {
   delete fakeObjective_;
   fakeObjective_ = fakeObjective;
 }
 // Set fake objective
-void 
+void
 OsiClpSolverInterface::setFakeObjective(double * fakeObjective)
 {
   delete fakeObjective_;
@@ -8958,7 +10188,7 @@ OsiClpSolverInterface::setFakeObjective(double * fakeObjective)
    basis - 0 use all slack basis
            1 try and put some in basis
 */
-void 
+void
 OsiClpSolverInterface::crossover(int options,int basis)
 {
   int numberRows = modelPtr_->getNumRows();
@@ -9071,7 +10301,7 @@ OsiClpSolverInterface::crossover(int options,int basis)
     model2->defaultFactorizationFrequency();
   }
   if (basis) {
-    // throw some into basis 
+    // throw some into basis
     int numberRows = model2->numberRows();
     int numberColumns = model2->numberColumns();
     double * dsort = new double[numberColumns];
@@ -9082,7 +10312,7 @@ OsiClpSolverInterface::crossover(int options,int basis)
     double * primalSolution = model2->primalColumnSolution();
     const double * dualSolution = model2->dualColumnSolution();
     int i;
-    for ( i=0;i<numberRows;i++) 
+    for ( i=0;i<numberRows;i++)
       model2->setRowStatus(i,ClpSimplex::superBasic);
     for ( i=0;i<numberColumns;i++) {
       double distance = CoinMin(columnUpper[i]-primalSolution[i],
@@ -9227,15 +10457,15 @@ OsiClpSolverInterface::crossover(int options,int basis)
   // Save basis in Osi object
   setWarmStart(NULL);
 }
-  
+
 //#############################################################################
 // Constructors / Destructor / Assignment
 //#############################################################################
 
 //-------------------------------------------------------------------
-// Default Constructor 
+// Default Constructor
 //-------------------------------------------------------------------
-OsiClpDisasterHandler::OsiClpDisasterHandler (OsiClpSolverInterface * model) 
+OsiClpDisasterHandler::OsiClpDisasterHandler (OsiClpSolverInterface * model)
   : ClpDisasterHandler(),
     osiModel_(model),
     whereFrom_(0),
@@ -9247,27 +10477,27 @@ OsiClpDisasterHandler::OsiClpDisasterHandler (OsiClpSolverInterface * model)
 }
 
 //-------------------------------------------------------------------
-// Copy constructor 
+// Copy constructor
 //-------------------------------------------------------------------
-OsiClpDisasterHandler::OsiClpDisasterHandler (const OsiClpDisasterHandler & rhs) 
+OsiClpDisasterHandler::OsiClpDisasterHandler (const OsiClpDisasterHandler & rhs)
   : ClpDisasterHandler(rhs),
     osiModel_(rhs.osiModel_),
     whereFrom_(rhs.whereFrom_),
     phase_(rhs.phase_),
     inTrouble_(rhs.inTrouble_)
-{  
+{
 }
 
 
 //-------------------------------------------------------------------
-// Destructor 
+// Destructor
 //-------------------------------------------------------------------
 OsiClpDisasterHandler::~OsiClpDisasterHandler ()
 {
 }
 
 //----------------------------------------------------------------
-// Assignment operator 
+// Assignment operator
 //-------------------------------------------------------------------
 OsiClpDisasterHandler &
 OsiClpDisasterHandler::operator=(const OsiClpDisasterHandler& rhs)
@@ -9305,7 +10535,7 @@ OsiClpDisasterHandler::check() const
     if (model_->numberIterations()<model_->baseIteration()+model_->numberRows()+1000) {
       return false;
     } else if (phase_<2) {
-      if (model_->numberIterations()> model_->baseIteration()+2*model_->numberRows()+model_->numberColumns()+2000||
+      if (model_->numberIterations()> model_->baseIteration()+2*model_->numberRows()+model_->numberColumns()+100000||
 	  model_->largestDualError()>=1.0e-1) {
 	// had model_->numberDualInfeasibilitiesWithoutFree()||
 #ifdef COIN_DEVELOP
@@ -9336,7 +10566,7 @@ OsiClpDisasterHandler::check() const
       }
     } else {
       assert (phase_==2);
-      if (model_->numberIterations()> model_->baseIteration()+3*model_->numberRows()+model_->numberColumns()+2000||
+      if (model_->numberIterations()> model_->baseIteration()+3*model_->numberRows()+model_->numberColumns()+100000||
 	  model_->largestPrimalError()>=1.0e3) {
 #ifdef COIN_DEVELOP
 	printf("trouble in phase %d\n",phase_);
@@ -9348,10 +10578,10 @@ OsiClpDisasterHandler::check() const
     }
   } else {
     // primal
-    if (model_->numberIterations()<model_->baseIteration()+2*model_->numberRows()+model_->numberColumns()+4000) {
+    if (model_->numberIterations()<model_->baseIteration()+2*model_->numberRows()+model_->numberColumns()+100000) {
       return false;
     } else if (phase_<2) {
-      if (model_->numberIterations()> model_->baseIteration()+3*model_->numberRows()+2000+
+      if (model_->numberIterations()> model_->baseIteration()+3*model_->numberRows()+20000+
 	  model_->numberColumns()&&
 	  model_->numberDualInfeasibilitiesWithoutFree()>0&&
 	  model_->numberPrimalInfeasibilities()>0&&
@@ -9365,7 +10595,7 @@ OsiClpDisasterHandler::check() const
       }
     } else {
       assert (phase_==2);
-      if (model_->numberIterations()> model_->baseIteration()+3*model_->numberRows()+2000||
+      if (model_->numberIterations()> model_->baseIteration()+3*model_->numberRows()+20000||
 	  model_->largestPrimalError()>=1.0e3) {
 #ifdef COIN_DEVELOP
 	printf("trouble in phase %d\n",phase_);
@@ -9382,21 +10612,27 @@ OsiClpDisasterHandler::saveInfo()
 {
   inTrouble_=true;
 }
+// are we in trouble
+bool
+OsiClpDisasterHandler::inTrouble() const
+{
+  return inTrouble_|(osiModel_->getModelPtr()->problemStatus()==4);
+}
 // Type of disaster 0 can fix, 1 abort
-int 
+int
 OsiClpDisasterHandler::typeOfDisaster()
 {
   return 0;
 }
 /* set model. */
-void 
+void
 OsiClpDisasterHandler::setOsiModel(OsiClpSolverInterface * model)
 {
   osiModel_=model;
   model_=model->getModelPtr();
 }
 // Create C++ lines to get to current state
-void 
+void
 OsiClpSolverInterface::generateCpp( FILE * fp)
 {
   modelPtr_->generateCpp(fp,true);
@@ -9514,7 +10750,7 @@ OsiClpSolverInterface::generateCpp( FILE * fp)
   fprintf(fp,"%d  osiclpModel->setHintParam(OsiDoReducePrint,saveHint_OsiDoReducePrint,saveStrength_OsiDoReducePrint);\n",add+6);
 }
 // So unit test can find out if NDEBUG set
-bool OsiClpHasNDEBUG() 
+bool OsiClpHasNDEBUG()
 {
 #ifdef NDEBUG
   return true;

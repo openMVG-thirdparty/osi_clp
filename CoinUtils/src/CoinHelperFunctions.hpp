@@ -1,4 +1,4 @@
-/* $Id: CoinHelperFunctions.hpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinHelperFunctions.hpp 1679 2013-12-05 11:27:45Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,7 +10,9 @@
 
 #if defined(_MSC_VER)
 #  include <direct.h>
+#  include <cctype>
 #  define getcwd _getcwd
+#  include <cctype>
 #else
 #  include <unistd.h>
 #endif
@@ -165,7 +167,8 @@ CoinDisjointCopyN(const T* from, const int size, T* to)
     are copied at a time. The source array is given by its first and "after
     last" entry; the target array is given by its first entry. */
 template <class T> inline void
-CoinDisjointCopy(const T* first, const T* last, T* to)
+CoinDisjointCopy(const T* first, const T* last,
+		 T* to)
 {
     CoinDisjointCopyN(first, static_cast<int>(last - first), to);
 }
@@ -253,7 +256,7 @@ CoinCopyOfArrayOrZero( const T * array , const int size)
     alternative coding if USE_MEMCPY defined*/
 #ifndef COIN_USE_RESTRICT
 template <class T> inline void
-CoinMemcpyN(register const T* from, const int size, register T* to)
+CoinMemcpyN(const T* from, const int size, T* to)
 {
 #ifndef _MSC_VER
 #ifdef USE_MEMCPY
@@ -340,7 +343,8 @@ CoinMemcpyN(const T * COIN_RESTRICT from, int size, T* COIN_RESTRICT to)
     are copied at a time. The source array is given by its first and "after
     last" entry; the target array is given by its first entry. */
 template <class T> inline void
-CoinMemcpy(const T* first, const T* last, T* to)
+CoinMemcpy(const T* first, const T* last,
+	   T* to)
 {
     CoinMemcpyN(first, static_cast<int>(last - first), to);
 }
@@ -838,8 +842,8 @@ inline int CoinStrNCaseCmp(const char* s0, const char* s1,
 	if (s1[i] == 0) {
 	    return 1;
 	}
-	const int c0 = tolower(s0[i]);
-	const int c1 = tolower(s1[i]);
+	const int c0 = std::tolower(s0[i]);
+	const int c1 = std::tolower(s1[i]);
 	if (c0 < c1)
 	    return -1;
 	if (c0 > c1)

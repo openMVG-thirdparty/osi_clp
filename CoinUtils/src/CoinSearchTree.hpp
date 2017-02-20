@@ -1,4 +1,4 @@
-/* $Id: CoinSearchTree.hpp 1590 2013-04-10 16:48:33Z stefan $ */
+/* $Id: CoinSearchTree.hpp 1824 2015-04-04 16:27:28Z tkr $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -243,7 +243,7 @@ public:
     inline int size() const { return size_; }
     inline int numInserted() const { return numInserted_; }
     inline CoinTreeNode* top() const {
-      if (size_ == 0)
+       if (size_ == 0 || candidateList_.size() == 0)
 	return NULL;
 #ifdef DEBUG_PRINT
       char output[44];
@@ -285,7 +285,7 @@ public:
 	if (incrInserted) {
 	    numInserted_ += sib.toProcess();
 	}
-	size_ += sib.size();
+	size_ += sib.toProcess();
     }
 };
 

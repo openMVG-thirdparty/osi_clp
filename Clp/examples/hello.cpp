@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: hello.cpp 1559 2010-06-05 19:42:36Z stefan $ */
 /* Copyright (C) 2004, International Business Machines Corporation
    and others.  All Rights Reserved.
 

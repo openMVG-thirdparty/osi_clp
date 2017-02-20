@@ -21,12 +21,12 @@
 #endif
 
 template <class T> static inline T
-VolMax(register const T x, register const T y) {
+VolMax(const T x, const T y) {
    return ((x) > (y)) ? (x) : (y);
 }
 
 template <class T> static inline T
-VolAbs(register const T x) {
+VolAbs(const T x) {
    return ((x) > 0) ? (x) : -(x);
 }
 
@@ -51,7 +51,7 @@ VolAbs(register const T x) {
 #define VOL_TEST_INDEX(i, size)
 #define VOL_TEST_SIZE(size)
 #endif
-      
+
 //############################################################################
 
 class VOL_dvector;
@@ -68,13 +68,13 @@ class VOL_problem;
 //############################################################################
 
 /**
-   This class contains the parameters controlling the Volume Algorithm 
+   This class contains the parameters controlling the Volume Algorithm
 */
 struct VOL_parms {
    /** initial value of lambda */
-   double lambdainit; 
+   double lambdainit;
    /** initial value of alpha */
-   double alphainit; 
+   double alphainit;
    /** minimum value for alpha */
    double alphamin;
    /** when little progress is being done, we multiply alpha by alphafactor */
@@ -86,9 +86,9 @@ struct VOL_parms {
    /** accept if max abs viol is less than this */
    double primal_abs_precision;
    /** accept if abs gap is less than this */
-   double gap_abs_precision; 
+   double gap_abs_precision;
    /** accept if rel gap is less than this */
-   double gap_rel_precision;  
+   double gap_rel_precision;
    /** terminate if best_ub - lcost < granularity */
    double granularity;
 
@@ -100,9 +100,9 @@ struct VOL_parms {
    /** through how many iterations does the relative ascent have to reach a
        minimum */
    int    ascent_check_invl;
-   
+
    /** maximum number of iterations  */
-   int    maxsgriters; 
+   int    maxsgriters;
 
    /** controls the level of printing.
        The flag should the the 'OR'-d value of the following options:
@@ -114,24 +114,24 @@ struct VOL_parms {
        </ul>
        Default: 3
    */
-   int    printflag; 
+   int    printflag;
    /** controls how often do we print */
-   int    printinvl; 
+   int    printinvl;
    /** controls how often we run the primal heuristic */
-   int    heurinvl; 
+   int    heurinvl;
 
    /** how many consecutive green iterations are allowed before changing
        lambda */
-   int greentestinvl; 
+   int greentestinvl;
    /** how many consecutive yellow iterations are allowed before changing
        lambda */
-   int yellowtestinvl; 
+   int yellowtestinvl;
    /** how many consecutive red iterations are allowed before changing
        lambda */
    int redtestinvl;
 
    /** number of iterations before we check if alpha should be decreased */
-   int    alphaint; 
+   int    alphaint;
 
    /** name of file for saving dual solution */
    char* temp_dualfile;
@@ -195,7 +195,7 @@ public:
       v = 0;
       sz = 0;
    }
-   /** Convex combination. Replace the current vector <code>v</code> with 
+   /** Convex combination. Replace the current vector <code>v</code> with
        <code>v = (1-gamma) v + gamma w</code>. */
    inline void cc(const double gamma, const VOL_dvector& w) {
       if (sz != w.sz) {
@@ -211,11 +211,11 @@ public:
       }
    }
 
-   /** delete the current vector and allocate space for a vector of size 
+   /** delete the current vector and allocate space for a vector of size
        <code>s</code>. */
    inline void allocate(const int s) {
       VOL_TEST_SIZE(s);
-      delete[] v;                 
+      delete[] v;
       v = new double[sz = s];
    }
 
@@ -290,7 +290,7 @@ public:
       sz = 0;
    }
 
-   /** delete the current vector and allocate space for a vector of size 
+   /** delete the current vector and allocate space for a vector of size
        <code>s</code>. */
    inline void allocate(const int s) {
       VOL_TEST_SIZE(s);
@@ -305,30 +305,30 @@ public:
    }
 
    /** Copy <code>w</code> into the vector. */
-   VOL_ivector& operator=(const VOL_ivector& v);      
+   VOL_ivector& operator=(const VOL_ivector& v);
    /** Replace every entry in the vector with <code>w</code>. */
    VOL_ivector& operator=(const int w);
 };
 
 //############################################################################
-// A class describing a primal solution. This class is used only internally 
+// A class describing a primal solution. This class is used only internally
 class VOL_primal {
-public: 
-   // objective value of this primal solution 
+public:
+   // objective value of this primal solution
    double value;
    // the largest of the v[i]'s
-   double viol;  
-   // primal solution  
+   double viol;
+   // primal solution
    VOL_dvector x;
    // v=b-Ax, for the relaxed constraints
-   VOL_dvector v; 
+   VOL_dvector v;
 
    VOL_primal(const int psize, const int dsize) : x(psize), v(dsize) {}
    VOL_primal(const VOL_primal& primal) :
       value(primal.value), viol(primal.viol), x(primal.x), v(primal.v) {}
    ~VOL_primal() {}
    inline VOL_primal& operator=(const VOL_primal& p) {
-      if (this == &p) 
+      if (this == &p)
 	 return *this;
       value = p.value;
       viol = p.viol;
@@ -347,28 +347,28 @@ public:
       v.cc(alpha, p.v);
    }
    // find maximum of v[i]
-   void find_max_viol(const VOL_dvector& dual_lb, 
+   void find_max_viol(const VOL_dvector& dual_lb,
 		      const VOL_dvector& dual_ub);
 };
 
 //-----------------------------------------------------------------------------
-// A class describing a dual solution. This class is used only internally 
+// A class describing a dual solution. This class is used only internally
 class VOL_dual {
 public:
    // lagrangian value
-   double lcost; 
+   double lcost;
    // reduced costs * (pstar-primal)
    double xrc;
    // this information is only printed
    // dual vector
-   VOL_dvector u; 
+   VOL_dvector u;
 
    VOL_dual(const int dsize) : u(dsize) { u = 0.0;}
    VOL_dual(const VOL_dual& dual) :
       lcost(dual.lcost), xrc(dual.xrc), u(dual.u) {}
    ~VOL_dual() {}
    inline VOL_dual& operator=(const VOL_dual& p) {
-      if (this == &p) 
+      if (this == &p)
 	 return *this;
       lcost = p.lcost;
       xrc = p.xrc;
@@ -398,14 +398,14 @@ public:
    int lastgreeniter, lastyellowiter, lastrediter;
    int ngs, nrs, nys;
    int rd;
-   
+
    VOL_swing() {
       lastgreeniter = lastyellowiter = lastrediter = 0;
       ngs = nrs = nys = 0;
    }
    ~VOL_swing(){}
 
-   inline void cond(const VOL_dual& dual, 
+   inline void cond(const VOL_dual& dual,
 		    const double lcost, const double ascent, const int iter) {
       double eps = 1.e-3;
 
@@ -414,7 +414,7 @@ public:
 	 lastgreeniter = iter;
 	 ++ngs;
 	 rd = 0;
-      } else { 
+      } else {
 	 if (ascent <= 0  &&  lcost > dual.lcost) {
 	    lastswing = yellow;
 	    lastyellowiter = iter;
@@ -445,10 +445,10 @@ public:
 	    lambdafactor = 2.0;
 	    if (parm.printflag & 2)
 	       printf("\n ---- increasing lamda to %g ----\n\n",
-		      lambda * lambdafactor); 
+		      lambda * lambdafactor);
 	 }
 	 break;
-      
+
        case yellow:
 	 cons = iter - VolMax(lastgreeniter, lastrediter);
 	 if (parm.printflag & 4)
@@ -461,7 +461,7 @@ public:
 		      lambda * lambdafactor);
 	 }
 	 break;
-      
+
        case red:
 	 cons = iter - VolMax(lastgreeniter, lastyellowiter);
 	 if (parm.printflag & 4)
@@ -472,7 +472,7 @@ public:
 	    if (parm.printflag & 2)
 	       printf("\n **** decreasing lamda to %g *****\n\n",
 		      lambda * lambdafactor);
-	 } 
+	 }
 	 break;
       }
       return lambdafactor;
@@ -481,7 +481,7 @@ public:
    inline void
    print() {
       printf("**** G= %i, Y= %i, R= %i ****\n", ngs, nys, nrs);
-      ngs = nrs = nys = 0;  
+      ngs = nrs = nys = 0;
    }
 };
 
@@ -502,7 +502,7 @@ public:
 			const double alpha) {
       if (alpha < parm.alphamin)
 	 return 1.0;
-      register const double ll = VolAbs(lcost);
+      const double ll = VolAbs(lcost);
       const double x = ll > 10 ? (lcost-lastvalue)/ll : (lcost-lastvalue);
       lastvalue = lcost;
       return (x <= 0.01) ? parm.alphafactor : 1.0;
@@ -511,7 +511,7 @@ public:
 
 //############################################################################
 /* here we compute the norm of the conjugate direction -hh-, the norm of the
-   subgradient -norm-, the inner product between the subgradient and the 
+   subgradient -norm-, the inner product between the subgradient and the
    last conjugate direction -vh-, and the inner product between the new
    conjugate direction and the subgradient */
 class VOL_vh {
@@ -532,7 +532,7 @@ public:
 };
 
 //############################################################################
-/* here we compute different parameter to be printed. v2 is the square of 
+/* here we compute different parameter to be printed. v2 is the square of
    the norm of the subgradient. vu is the inner product between the dual
    variables and the subgradient. vabs is the maximum absolute value of
    the violations of pstar. asc is the inner product between the conjugate
@@ -558,7 +558,7 @@ public:
 
 /** The user hooks should be overridden by the user to provide the
     problem specific routines for the volume algorithm. The user
-    should derive a class ... 
+    should derive a class ...
 
     for all hooks: return value of -1 means that volume should quit
 */
@@ -567,7 +567,7 @@ public:
    virtual ~VOL_user_hooks() {}
 public:
    // for all hooks: return value of -1 means that volume should quit
-   /** compute reduced costs    
+   /** compute reduced costs
        @param u (IN) the dual variables
        @param rc (OUT) the reduced cost with respect to the dual values
    */
@@ -585,22 +585,22 @@ public:
 				double& lcost, VOL_dvector& x, VOL_dvector& v,
 				double& pcost) = 0;
    /** Starting from the primal vector x, run a heuristic to produce
-       an integer solution  
+       an integer solution
        @param x (IN) the primal vector
-       @param heur_val (OUT) the value of the integer solution (return 
+       @param heur_val (OUT) the value of the integer solution (return
        <code>COIN_DBL_MAX</code> here if no feas sol was found
    */
-   virtual int heuristics(const VOL_problem& p, 
+   virtual int heuristics(const VOL_problem& p,
 			  const VOL_dvector& x, double& heur_val) = 0;
 };
 
 //#############################################################################
 
-/** This class holds every data for the Volume Algorithm and its 
+/** This class holds every data for the Volume Algorithm and its
     <code>solve</code> method must be invoked to solve the problem.
 
-    The INPUT fields must be filled out completely before <code>solve</code> 
-    is invoked. <code>dsol</code> have to be filled out if and only if the 
+    The INPUT fields must be filled out completely before <code>solve</code>
+    is invoked. <code>dsol</code> have to be filled out if and only if the
     last argument to <code>solve</code> is <code>true</code>.
 */
 
@@ -610,7 +610,7 @@ private:
    VOL_problem& operator=(const VOL_problem&);
    void set_default_parm();
    // ############ INPUT fields ########################
-public: 
+public:
    /**@name Constructors and destructor */
    //@{
    /** Default constructor. */
@@ -624,17 +624,17 @@ public:
 
    /**@name Method to solve the problem. */
    //@{
-   /** Solve the problem using the <code>hooks</code>. Any information needed 
-       in the hooks must be stored in the structure <code>user_data</code> 
+   /** Solve the problem using the <code>hooks</code>. Any information needed
+       in the hooks must be stored in the structure <code>user_data</code>
        points to. */
    int solve(VOL_user_hooks& hooks, const bool use_preset_dual = false);
    //@}
 
-private: 
+private:
    /**@name Internal data (may be inquired for) */
    //@{
    /** value of alpha */
-   double alpha_; 
+   double alpha_;
    /** value of lambda */
    double lambda_;
    // This union is here for padding (so that data members would be
@@ -647,7 +647,7 @@ private:
    //@}
 
 public:
-  
+
    /**@name External data (containing the result after solve) */
    //@{
    /** final lagrangian value (OUTPUT) */
@@ -665,9 +665,9 @@ public:
    /** The parameters controlling the Volume Algorithm (INPUT) */
    VOL_parms parm;
    /** length of primal solution (INPUT) */
-   int psize;        
+   int psize;
    /** length of dual solution (INPUT) */
-   int dsize;      
+   int dsize;
    /** lower bounds for the duals (if 0 length, then filled with -inf) (INPUT)
     */
    VOL_dvector dual_lb;

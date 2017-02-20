@@ -1,4 +1,4 @@
-/* $Id: CoinSignal.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinSignal.hpp 1810 2015-03-13 20:16:34Z tkr $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -30,28 +30,28 @@
 //-----------------------------------------------------------------------------
 
 #if defined(__CYGWIN__) && defined(__GNUC__)
-   typedef typeof(SIG_DFL) CoinSighandler_t;
+   typedef __decltype(SIG_DFL) CoinSighandler_t;
 #  define CoinSighandler_t_defined
 #endif
 
 //-----------------------------------------------------------------------------
 
 #if defined(__MINGW32__) && defined(__GNUC__)
-   typedef typeof(SIG_DFL) CoinSighandler_t;
+   typedef __decltype(SIG_DFL) CoinSighandler_t;
 #  define CoinSighandler_t_defined
 #endif
 
 //-----------------------------------------------------------------------------
 
 #if defined(__FreeBSD__) && defined(__GNUC__)
-   typedef typeof(SIG_DFL) CoinSighandler_t;
+   typedef __decltype(SIG_DFL) CoinSighandler_t;
 #  define CoinSighandler_t_defined
 #endif
 
 //-----------------------------------------------------------------------------
 
 #if defined(__NetBSD__) && defined(__GNUC__)
-   typedef typeof(SIG_DFL) CoinSighandler_t;
+   typedef __decltype(SIG_DFL) CoinSighandler_t;
 #  define CoinSighandler_t_defined
 #endif
 
@@ -59,7 +59,7 @@
 
 #if defined(_AIX)
 #  if defined(__GNUC__)
-      typedef typeof(SIG_DFL) CoinSighandler_t;
+      typedef __decltype(SIG_DFL) CoinSighandler_t;
 #     define CoinSighandler_t_defined
 #  endif
 #endif
@@ -69,7 +69,7 @@
 #if defined (__hpux)
 #  define CoinSighandler_t_defined
 #  if defined(__GNUC__)
-      typedef typeof(SIG_DFL) CoinSighandler_t;
+      typedef __decltype(SIG_DFL) CoinSighandler_t;
 #  else
       extern "C" {
          typedef void (*CoinSighandler_t) (int);
@@ -88,7 +88,7 @@
 #     define CoinSighandler_t_defined
 #  endif
 #  if defined(__GNUC__)
-      typedef typeof(SIG_DFL) CoinSighandler_t;
+      typedef __decltype(SIG_DFL) CoinSighandler_t;
 #     define CoinSighandler_t_defined
 #  endif
 #endif
@@ -96,20 +96,15 @@
 //-----------------------------------------------------------------------------
 
 #if defined(__MACH__) && defined(__GNUC__)
-#if defined(__clang__)
-   typedef void(*CoinSighandler_t)(int);
-#define CoinSighandler_t_defined
-#elif defined(__MACH__) && defined(__GNUC__)
-   typedef typeof(SIG_DFL) CoinSighandler_t;
-# define CoinSighandler_t_defined
-#endif
+typedef __decltype(SIG_DFL) CoinSighandler_t;
+#  define CoinSighandler_t_defined
 #endif
 
 //#############################################################################
 
 #ifndef CoinSighandler_t_defined
 #  warning("OS and/or compiler is not recognized. Defaulting to:");
-#  warning("extern "C" {")
+#  warning("extern 'C' {")
 #  warning("   typedef void (*CoinSighandler_t) (int);")
 #  warning("}")
    extern "C" {

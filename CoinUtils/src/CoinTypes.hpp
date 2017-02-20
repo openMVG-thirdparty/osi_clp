@@ -1,4 +1,4 @@
-/* $Id: CoinTypes.hpp 1549 2012-08-09 22:24:43Z tkr $ */
+/* $Id: CoinTypes.hpp 1762 2014-12-29 20:37:12Z tkr $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7,8 +7,12 @@
 #define _CoinTypes_hpp
 
 #include "CoinUtilsConfig.h"
-#ifdef __MINGW64__
+/* On some systems, we require stdint.h to have the 64bit integer type defined. */
+#ifdef COINUTILS_HAS_STDINT_H
 #include <stdint.h>
+#endif
+#ifdef COINUTILS_HAS_CSTDINT
+#include <cstdint>
 #endif
 
 #define CoinInt64 COIN_INT64_T

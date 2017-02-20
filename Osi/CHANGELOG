@@ -1,3 +1,13 @@
+17/02/2016 OsiCpx
+  - fix handling of cplex message callbacks in OsiCpx::reset()
+
+15/02/2016 OsiCpx
+  - fixed OsiCpx::getRowActivity() when solved a MIP
+  
+09/06/2015 OsiSpx
+  - added compatibility with SoPlex 2.2
+  - added OsiSpx::getLpPtr()
+
 12/06/2014 OsiSpx
   - added compatibility with SoPlex 2.0 (using SoPlex legacy interface)
 

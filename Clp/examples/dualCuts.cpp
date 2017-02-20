@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: dualCuts.cpp 1662 2011-01-04 17:52:40Z lou $ */
 /*
   Copyright (C) 2003, International Business Machines Corporation and others.
   All Rights Reserved.

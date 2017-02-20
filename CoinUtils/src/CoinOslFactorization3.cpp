@@ -1,4 +1,4 @@
-/* $Id: CoinOslFactorization3.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinOslFactorization3.cpp 1582 2013-04-06 14:33:07Z stefan $ */
 /*
   Copyright (C) 1987, 2009, International Business Machines
   Corporation and others.  All Rights Reserved.
@@ -1906,10 +1906,7 @@ static void c_ekk_sort2(int * key , double * array2,int number)
   double it;
   int j;
   /*check already sorted  */
-#ifndef LONG_MAX
-#define LONG_MAX 0x7fffffff;
-#endif
-  int last=-LONG_MAX;
+  int last=-COIN_INT_MAX;
   for (j=0;j<number;j++) {
     if (key[j]>=last) {
       last=key[j];

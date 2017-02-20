@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDupcol.hpp 1550 2012-08-28 14:55:18Z forrest $ */
+/* $Id: CoinPresolveDupcol.hpp 1854 2015-12-18 14:18:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -112,6 +112,34 @@ class duprow_action : public CoinPresolveAction {
   //~duprow_action() { delete[]actions_; }
 };
 
+class duprow3_action : public CoinPresolveAction {
+  struct action {
+    int row;
+    double lbound;
+    double ubound;
+  };
+
+  const int nactions_;
+  const action *const actions_;
+
+  duprow3_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
+  duprow3_action(int nactions,
+		      const action *actions,
+		      const CoinPresolveAction *next) :
+    CoinPresolveAction(next),
+    nactions_(nactions), actions_(actions) {}
+
+ public:
+  const char *name() const;
+
+  static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
+					 const CoinPresolveAction *next);
+
+  void postsolve(CoinPostsolveMatrix *prob) const;
+
+  //~duprow_action() { delete[]actions_; }
+};
+
 /*! \class gubrow_action
     \brief Detect and remove entries whose sum is known
 
@@ -124,15 +152,19 @@ class duprow_action : public CoinPresolveAction {
 
 class gubrow_action : public CoinPresolveAction {
   struct action {
-    int row;
-    double lbound;
-    double ubound;
+    double rhs;
+    // last is row itself
+    int * deletedRow;
+    double * rowels;
+    int * indices; // indices in gub row
+    int nDrop;
+    int ninrow;
   };
 
   const int nactions_;
   const action *const actions_;
 
-  gubrow_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
+  //gubrow_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
   gubrow_action(int nactions,
 		      const action *actions,
 		      const CoinPresolveAction *next) :
@@ -147,7 +179,7 @@ class gubrow_action : public CoinPresolveAction {
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  //~gubrow_action() { delete[]actions_; }
+  virtual ~gubrow_action();
 };
 
 /*! \class twoxtwo_action

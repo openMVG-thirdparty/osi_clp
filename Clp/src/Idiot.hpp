@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: Idiot.hpp 2143 2015-05-20 15:49:17Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -204,6 +204,10 @@ public:
      inline void setDropEnoughWeighted(double value) {
           dropEnoughWeighted_ = value;
      }
+     /// Set model
+     inline void setModel(OsiSolverInterface * model) {
+       model_ = model;
+     };
      //@}
 
 
@@ -245,7 +249,7 @@ private:
                         double * colsol, const double * lower, const double * upper,
                         const double * rowLower, const double * rowUpper,
                         const double * cost, const double * element, double fixTolerance, double & objChange,
-                        double & infChange);
+                        double & infChange, double & maxInfeasibility);
 private:
      /// Underlying model
      OsiSolverInterface * model_;
@@ -282,7 +286,13 @@ private:
                   2048 - keep lambda across mu change
 		  4096 - return best solution (not last found)
 		  8192 - always do a presolve in crossover
-		 16384 - costed slacks found - so whenUsed_ longer */
+		 16384 - costed slacks found - so whenUsed_ longer 
+		 32768 - experimental 1
+		 65536 - experimental 2
+		 131072 - experimental 3 
+		 262144 - just values pass etc 
+		 524288 - don't treat structural slacks as slacks */
+                 
      int lightWeight_; // 0 - normal, 1 lightweight
 };
 #endif

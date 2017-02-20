@@ -8,7 +8,7 @@
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
 //
-// Last edit: $Id$
+// Last edit: $Id: OsiSpxSolverInterfaceTest.cpp 1967 2014-06-12 16:02:12Z stefan $
 
 #include "CoinPragma.hpp"
 #include "OsiConfig.h"

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: CoinAbcCommon.hpp 2074 2014-12-10 09:43:54Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -30,7 +30,7 @@ typedef unsigned int CoinSimplexUnsignedInt;
 #define ABC_INLINE
 #endif
 #ifndef ABC_PARALLEL
-#ifdef HAS_CILK 
+#ifdef HAS_CILK
 #define ABC_PARALLEL 2
 #else
 #define ABC_PARALLEL 0
@@ -40,6 +40,11 @@ typedef unsigned int CoinSimplexUnsignedInt;
 //#define EARLY_FACTORIZE
 #ifndef FAKE_CILK
 #include <cilk/cilk.h>
+//gcc4.9 main branch has not got cilk_for!!!!!!!!!!!
+#ifdef GCC_4_9
+#undef cilk_for
+#define cilk_for for
+#endif
 #else
 #define cilk_for for
 #define cilk_spawn
@@ -190,9 +195,9 @@ typedef const int cipfint;
 enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102 };
 enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113,
 		      AtlasConj=114};
-#define CLAPACK
+//#define CLAPACK
 // using simple lapack interface
-extern "C" 
+extern "C"
 {
   /** LAPACK Fortran subroutine DGETRS. */
   void F77_FUNC(dgetrs,DGETRS)(char *trans, cipfint *n,
@@ -224,7 +229,7 @@ extern "C"
 #endif
 typedef unsigned char CoinCheckZero;
 template <class T> inline void
-CoinAbcMemset0(register T* to, const int size)
+CoinAbcMemset0(T* to, const int size)
 {
 #ifndef NDEBUG
   // Some debug so check
@@ -235,47 +240,47 @@ CoinAbcMemset0(register T* to, const int size)
   std::memset(to,0,size*sizeof(T));
 }
 template <class T> inline void
-CoinAbcMemcpy(register T* to, register const T* from, const int size )
+CoinAbcMemcpy(T* to, const T* from, const int size )
 {
 #ifndef NDEBUG
   // Some debug so check
   if (size < 0)
     throw CoinError("trying to copy negative number of entries",
 		    "CoinAbcMemcpy", "");
-  
+
 #endif
   std::memcpy(to,from,size*sizeof(T));
 }
 class ClpSimplex;
 class AbcSimplex;
 class AbcTolerancesEtc  {
-  
+
 public:
-  
-  
-  
+
+
+
   ///@name Constructors and destructors
   //@{
   /// Default Constructor
   AbcTolerancesEtc();
-  
+
   /// Useful Constructors
   AbcTolerancesEtc(const ClpSimplex * model);
   AbcTolerancesEtc(const AbcSimplex * model);
-  
+
   /// Copy constructor
   AbcTolerancesEtc(const AbcTolerancesEtc &);
-  
+
   /// Assignment operator
   AbcTolerancesEtc & operator=(const AbcTolerancesEtc& rhs);
-  
+
   /// Destructor
   ~AbcTolerancesEtc ();
   //@}
-  
-  
+
+
   //---------------------------------------------------------------------------
-  
+
 public:
   ///@name Public member data
   //@{
@@ -301,7 +306,7 @@ public:
       from basis until largest infeasibility < allowedInfeasibility.
       if allowedInfeasibility>= incomingInfeasibility this is
       always possible altough you may end up with an all slack basis.
-      
+
       Defaults are 1.0,10.0
   */
   double incomingInfeasibility_;
